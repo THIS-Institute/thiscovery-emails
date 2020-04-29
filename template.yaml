@@ -49,7 +49,6 @@ Resources:
             Bucket: !Ref incoming
             Events:
               - s3:ObjectCreated:*
-              - s3:ObjectRemoved:*
   EmailServiceApi:
     Type: AWS::Serverless::Api
     Properties:
