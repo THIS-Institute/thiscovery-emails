@@ -42,6 +42,14 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
+      Events:
+        incoming:
+          Type: S3
+          Properties:
+            Bucket: !Ref incoming
+            Events:
+              - s3:ObjectCreated:*
+              - s3:ObjectRemoved:*
   EmailServiceApi:
     Type: AWS::Serverless::Api
     Properties:
