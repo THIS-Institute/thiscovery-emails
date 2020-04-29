@@ -27,18 +27,18 @@ Resources:
             Path: /v1/send
             Method: POST
             RestApiId: !Ref EmailServiceApi
-  Function:
+  ForwardEmail:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-Function
+      FunctionName: !Sub ${AWS::StackName}-ForwardEmail
       Description: !Sub
         - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
-        - ResourceName: Function
-      CodeUri: src/Function
-      Handler: index.handler
-      Runtime: nodejs12.x
-      MemorySize: 3008
-      Timeout: 30
+        - ResourceName: ForwardEmail
+      CodeUri: src
+      Handler: email_process.forward_email
+      Runtime: python3.7
+      MemorySize: !Ref EnvConfiglambdamemorysizeAsString
+      Timeout: !Ref EnvConfiglambdatimeoutAsString
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
