@@ -1,22 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Resources:
-  DefaultRuleSet:
-    Type: AWS::SES::ReceiptRuleSet
-    Properties:
-      RuleSetName: !Sub ${AWS::StackName}-DefaultRuleSet
-  SaveIncomingMailToS3:
-    Type: AWS::SES::ReceiptRule
-    Properties:
-      After: null
-      Rule:
-        Actions:
-          - S3Action:
-              BucketName: !GetAtt incoming.Properties.BucketName
-        Enabled: true
-        Name: !Sub ${AWS::StackName}-SaveIncomingMailToS3
-        ScanEnabled: false
-      RuleSetName: !GetAtt DefaultRuleSet.Properties.RuleSetName
   incoming:
     Type: AWS::S3::Bucket
     Properties:
