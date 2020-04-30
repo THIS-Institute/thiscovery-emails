@@ -12,11 +12,11 @@ Resources:
       Rule:
         Actions:
           - S3Action:
-              BucketName: !Ref incoming
+              BucketName: test-test-incoming
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMailToS3
         ScanEnabled: false
-      RuleSetName: !Ref DefaultRuleSet
+      RuleSetName: !Sub ${AWS::StackName}-DefaultRuleSet
   incoming:
     Type: AWS::S3::Bucket
     Properties:
