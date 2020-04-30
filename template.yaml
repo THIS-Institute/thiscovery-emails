@@ -5,14 +5,14 @@ Resources:
     Type: AWS::SES::ReceiptRuleSet
     Properties:
       RuleSetName: !Sub ${AWS::StackName}-DefaultRuleSet
-  SaveIncomingMailToS3:
+  SaveIncomingMail:
     Type: AWS::SES::ReceiptRule
     Properties:
       After: null
       Rule:
         Actions:
           - S3Action:
-              BucketName: test-test-incoming
+              BucketName: !Sub ${AWS::StackName}-incoming-${AWS::AccountId}
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMailToS3
         ScanEnabled: false
