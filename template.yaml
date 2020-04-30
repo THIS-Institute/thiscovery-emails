@@ -18,7 +18,29 @@ Resources:
   incoming:
     Type: AWS::S3::Bucket
     Properties:
+      AccessControl: Private
       BucketName: !Sub ${AWS::StackName}-incoming-${AWS::AccountId}
+  SesAccessIncomingBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: !Ref incoming
+      PolicyDocument:
+        Statement:
+          - Action:
+              - "s3:PutObject"
+            Effect: "Allow"
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:aws:s3:::"
+                  - Ref: "incoming"
+                  - "/*"
+            Principal:
+              Service: "ses.amazonaws.com"
+            Condition:
+              StringEquals:
+                aws:Referer: !Sub ${AWS::AccountId}
   SendEmail:
     Type: AWS::Serverless::Function
     Properties:

@@ -127,3 +127,18 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# individual development config settings
+src/common/dev_config.py
+
+# local secrets file
+api/local/secrets.py
+
+# sandbox
+/sandbox/
+
+# symbolic-link shortcuts
+/deploy_to_aws.py
+/setup-sample-data.py
+/credentials
+/api/local/scratchpad.py
