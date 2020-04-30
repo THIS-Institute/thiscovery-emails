@@ -9,6 +9,12 @@ Resources:
     Type: AWS::SES::ReceiptRule
     Properties:
       After: null
+      Rule:
+        Actions:
+          - StopAction:
+              Scope: RuleSet
+        Enabled: true
+        Name: !Sub ${AWS::StackName}-SaveIncomingMail
       RuleSetName: !Sub ${AWS::StackName}-DefaultRuleSet
   incoming:
     Type: AWS::S3::Bucket
