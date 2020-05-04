@@ -9,11 +9,27 @@ Resources:
     Type: AWS::SES::ReceiptRule
     Properties:
       Rule:
+        Recipients:
+          - "thiscovery.org"
         Actions:
           - S3Action:
               BucketName: !Ref incoming
+              ObjectKeyPrefix: "production-"
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMail
+      RuleSetName: !Ref DefaultRuleSet
+  SaveIncomingSubdomainMail:
+    Type: AWS::SES::ReceiptRule
+    Properties:
+      Rule:
+        Recipients:
+          - ".thiscovery.org"
+        Actions:
+          - S3Action:
+              BucketName: !Ref incoming
+              ObjectKeyPrefix: "subdomain-"
+        Enabled: true
+        Name: !Sub ${AWS::StackName}-SaveIncomingSubdomainMail
       RuleSetName: !Ref DefaultRuleSet
   incoming:
     Type: AWS::S3::Bucket
