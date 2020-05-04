@@ -18,18 +18,31 @@ Resources:
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMail
       RuleSetName: !Ref DefaultRuleSet
-  SaveIncomingSubdomainMail:
+  SaveIncomingTestMail:
     Type: AWS::SES::ReceiptRule
     Properties:
       Rule:
         Recipients:
-          - ".thiscovery.org"
+          - "test.thiscovery.org"
         Actions:
           - S3Action:
               BucketName: !Ref incoming
-              ObjectKeyPrefix: "subdomain-"
+              ObjectKeyPrefix: "test-"
         Enabled: true
-        Name: !Sub ${AWS::StackName}-SaveIncomingSubdomainMail
+        Name: !Sub ${AWS::StackName}-SaveIncomingTestMail
+      RuleSetName: !Ref DefaultRuleSet
+  SaveIncomingStagingMail:
+    Type: AWS::SES::ReceiptRule
+    Properties:
+      Rule:
+        Recipients:
+          - "staging.thiscovery.org"
+        Actions:
+          - S3Action:
+              BucketName: !Ref incoming
+              ObjectKeyPrefix: "staging-"
+        Enabled: true
+        Name: !Sub ${AWS::StackName}-SaveIncomingStagingMail
       RuleSetName: !Ref DefaultRuleSet
   incoming:
     Type: AWS::S3::Bucket
