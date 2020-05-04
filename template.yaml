@@ -19,7 +19,7 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       AccessControl: Private
-      BucketName: !Sub ${AWS::StackName}-incoming-${AWS::AccountId}
+      BucketName: !Sub ${AWS::StackName}-incoming
   SesAccessIncomingBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -98,6 +98,8 @@ Resources:
         paths:
           /v1/send:
             post:
+              security:
+                - api_key: []
               x-amazon-apigateway-integration:
                 httpMethod: POST
                 type: aws_proxy
