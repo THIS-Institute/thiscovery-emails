@@ -14,7 +14,7 @@ Resources:
         Actions:
           - S3Action:
               BucketName: !Ref incoming
-              ObjectKeyPrefix: "production-"
+              ObjectKeyPrefix: "production"
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMail
       RuleSetName: !Ref DefaultRuleSet
@@ -27,7 +27,7 @@ Resources:
         Actions:
           - S3Action:
               BucketName: !Ref incoming
-              ObjectKeyPrefix: "test-"
+              ObjectKeyPrefix: "test"
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingTestMail
       RuleSetName: !Ref DefaultRuleSet
@@ -40,7 +40,7 @@ Resources:
         Actions:
           - S3Action:
               BucketName: !Ref incoming
-              ObjectKeyPrefix: "staging-"
+              ObjectKeyPrefix: "staging"
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingStagingMail
       RuleSetName: !Ref DefaultRuleSet
