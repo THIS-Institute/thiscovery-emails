@@ -9,46 +9,11 @@ Resources:
     Type: AWS::SES::ReceiptRule
     Properties:
       Rule:
-        Recipients:
-          - "thiscovery.org"
         Actions:
           - S3Action:
               BucketName: !Ref incoming
-              ObjectKeyPrefix: "production"
-          - LambdaAction:
-              FunctionArn: !GetAtt ForwardEmail.Arn
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMail
-      RuleSetName: !Ref DefaultRuleSet
-  SaveIncomingTestMail:
-    Type: AWS::SES::ReceiptRule
-    Properties:
-      Rule:
-        Recipients:
-          - "test.thiscovery.org"
-        Actions:
-          - S3Action:
-              BucketName: !Ref incoming
-              ObjectKeyPrefix: "test"
-          - LambdaAction:
-              FunctionArn: !GetAtt ForwardEmail.Arn
-        Enabled: true
-        Name: !Sub ${AWS::StackName}-SaveIncomingTestMail
-      RuleSetName: !Ref DefaultRuleSet
-  SaveIncomingStagingMail:
-    Type: AWS::SES::ReceiptRule
-    Properties:
-      Rule:
-        Recipients:
-          - "staging.thiscovery.org"
-        Actions:
-          - S3Action:
-              BucketName: !Ref incoming
-              ObjectKeyPrefix: "staging"
-          - LambdaAction:
-              FunctionArn: !GetAtt ForwardEmail.Arn
-        Enabled: true
-        Name: !Sub ${AWS::StackName}-SaveIncomingStagingMail
       RuleSetName: !Ref DefaultRuleSet
   incoming:
     Type: AWS::S3::Bucket
