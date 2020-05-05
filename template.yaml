@@ -30,6 +30,8 @@ Resources:
           - S3Action:
               BucketName: !Ref incoming
               ObjectKeyPrefix: "test"
+          - LambdaAction:
+              FunctionArn: !GetAtt ForwardEmail.Arn
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingTestMail
       RuleSetName: !Ref DefaultRuleSet
@@ -43,6 +45,8 @@ Resources:
           - S3Action:
               BucketName: !Ref incoming
               ObjectKeyPrefix: "staging"
+          - LambdaAction:
+              FunctionArn: !GetAtt ForwardEmail.Arn
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingStagingMail
       RuleSetName: !Ref DefaultRuleSet
