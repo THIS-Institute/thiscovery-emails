@@ -18,19 +18,20 @@
 # import http
 # import json
 
-# import common.utilities as utils
+import common.utilities as utils
 # from common.ses_utilities import SesClient
 
 
 ses_client = None
 
 
-# @utils.lambda_wrapper
+@utils.lambda_wrapper
 def forward_email_handler(event, context):
-    # logger = event['logger']
-    # message = event['Records'][0]['ses']['mail']
+    logger = event['logger']
+    logger.info('Hello world', extra={})
+    message = event['Records'][0]['ses']['mail']
+    logger.info('Message', extra={'message': message})
     # print(json.dumps(message))
-    print('Hello world')
     # message_id = event['Records'][0]['ses']['mail']['messageId']
     # logger.info("Processing message", extra={'message_id': message_id})
 
