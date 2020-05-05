@@ -15,21 +15,23 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
-import http
-import json
+# import http
+# import json
 
-# import common.utilities as utils
+import common.utilities as utils
 # from common.ses_utilities import SesClient
 
 
 ses_client = None
 
 
-# @utils.lambda_wrapper
+@utils.lambda_wrapper
 def forward_email_handler(event, context):
-    # logger = event['logger']
-    message = event['Records'][0]['ses']['mail']
-    print(json.dumps(message))
+    logger = event['logger']
+    logger.info('Logging event', extra={'event': event})
+    # email = event['Records'][0]['ses']['mail']
+    # logger.info('Message', extra={'email': email})
+    # print(json.dumps(message))
     # message_id = event['Records'][0]['ses']['mail']['messageId']
     # logger.info("Processing message", extra={'message_id': message_id})
 
