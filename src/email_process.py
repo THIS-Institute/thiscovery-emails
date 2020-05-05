@@ -26,7 +26,7 @@ ses_client = None
 
 
 # @utils.lambda_wrapper
-def forward_email_handler(event, context):
+def forward_email(event, context):
     # logger = event['logger']
     # message = event['Records'][0]['ses']['mail']
     # print(json.dumps(message))
