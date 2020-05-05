@@ -29,8 +29,8 @@ ses_client = None
 def forward_email_handler(event, context):
     logger = event['logger']
     logger.info('Hello world', extra={})
-    message = event['Records'][0]['ses']['mail']
-    logger.info('Message', extra={'message': message})
+    email = event['Records'][0]['ses']['mail']
+    logger.info('Message', extra={'email': email})
     # print(json.dumps(message))
     # message_id = event['Records'][0]['ses']['mail']['messageId']
     # logger.info("Processing message", extra={'message_id': message_id})
