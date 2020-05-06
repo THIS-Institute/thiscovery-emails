@@ -15,26 +15,98 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
+import email
 # import http
 # import json
+import re
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 
 import common.utilities as utils
-# from common.ses_utilities import SesClient
+from common.s3_utilities import S3Client
+from common.ses_utilities import SesClient
 
 
-ses_client = None
+def get_forward_to_address(received_for):
+    pass
+
+
+def extract_received_for(mail_object):
+    received_for_pattern = re.compile(r'for (.+@.+thiscovery\.org)')
+    received_value = mail_object.get('Received')
+    return received_for_pattern.search(received_value).group(1)
+
+
+def create_message(message_content, message_obj_http_path):
+    separator = ";"
+    mail_object = email.message_from_string(message_content.decode('utf-8'))
+    received_for = extract_received_for(mail_object)
+    recipient = get_forward_to_address(received_for)
+
+    # Create a new subject line.
+    subject_original = mail_object['Subject']
+    subject = f"[{received_for}] " + subject_original
+
+    # The body text of the email.
+    body_text = f"The attached message was received from {separator.join(mail_object.get_all('From'))}. " \
+                f"This message is archived at {message_obj_http_path}"
+
+    # The file name to use for the attached message. Uses regex to remove all
+    # non-alphanumeric characters, and appends a file extension.
+    filename = re.sub('[^0-9a-zA-Z]+', '_', subject_original) + ".eml"
+
+    # Create a MIME container.
+    msg = MIMEMultipart()
+    # Create a MIME text part.
+    text_part = MIMEText(body_text, _subtype="html")
+    # Attach the text part to the MIME message.
+    msg.attach(text_part)
+
+    # Add subject, from and to lines.
+    msg['Subject'] = subject
+    msg['From'] = mail_object['From']
+    msg['To'] = recipient
+
+    # Create a new MIME object.
+    att = MIMEApplication(message_content, filename)
+    att.add_header("Content-Disposition", 'attachment', filename=filename)
+
+    # Attach the file object to the message.
+    msg.attach(att)
+
+    return recipient, msg.as_string()
+
+
+def get_message_from_s3(s3_bucket_name, object_key):
+    s3_client = S3Client()
+    message_obj_http_path = f"http://s3.console.aws.amazon.com/s3/object/{s3_bucket_name}/{object_key}?region={region}"
+    message_obj = s3_client.get_object(bucket=s3_bucket_name, key=object_key)
+    message_content = message_obj['Body'].read()
+    return message_content, message_obj_http_path
+
+
+def forward_email(s3_bucket_name, object_key):
+    message_content, message_obj_http_path = get_message_from_s3(s3_bucket_name, object_key)
+    recipient, output_message = create_message(message_content, message_obj_http_path)
+    ses_client = SesClient()
+    return ses_client.send_raw_email(
+        Source='no-reply@thiscovery.org',
+        Destinations=[recipient],
+        RawMessage={'Data': output_message}
+    )
 
 
 @utils.lambda_wrapper
 def forward_email_handler(event, context):
     logger = event['logger']
-    logger.info('Logging event', extra={'event': event})
-    # email = event['Records'][0]['ses']['mail']
-    # logger.info('Message', extra={'email': email})
-    # print(json.dumps(message))
-    # message_id = event['Records'][0]['ses']['mail']['messageId']
-    # logger.info("Processing message", extra={'message_id': message_id})
+    logger.debug('Logging event', extra={'event': event})
 
+    s3_dict = event['Records'][0]['s3']
+    bucket_name = s3_dict['bucket']['name']
+    obj_key = s3_dict['object']['key']
+    logger.info("Processing message object", extra={'bucket_name': bucket_name, 'obj_key': obj_key})
+    return forward_email()
 
 # def send_email():
 #     global ses_client

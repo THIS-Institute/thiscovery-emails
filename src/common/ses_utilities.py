@@ -78,3 +78,14 @@ class SesClient(utils.BaseClient):
             return status_code
         except ClientError as e:
             self.logger.error(e)
+
+    def send_raw_email(self, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ses.html#SES.Client.send_raw_email
+        """
+        try:
+            response = self.client.send_raw_email(**kwargs)
+            status_code = response['ResponseMetadata']['HTTPStatusCode']
+            return status_code
+        except ClientError as e:
+            self.logger.error(e)

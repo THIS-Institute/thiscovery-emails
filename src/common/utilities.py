@@ -14,14 +14,14 @@
 #
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
-#
-# import boto3
+
+import boto3
 # import datetime
 # import epsagon
 import functools
-# import json
+import json
 import logging
-# import os
+import os
 # import re
 # import requests
 import sys
@@ -42,27 +42,27 @@ from pythonjsonlogger import jsonlogger
 #
 # def namespace2name(namespace):
 #     return namespace[1:-1]
-#
-#
-# def namespace2profile(namespace):
-#     """
-#     Maps namespaces in dev_config.py to profiles in ~/.aws/credentials
-#     """
-#     if not running_on_aws():
-#         from api.local.secrets import THISCOVERY_PROD_PROFILE, THISCOVERY_STAGING_PROFILE, THISCOVERY_AFS25_PROFILE, THISCOVERY_AMP205_PROFILE
-#
-#         namespace2profile_map = {
-#             '/prod/': THISCOVERY_PROD_PROFILE,
-#             '/staging/': THISCOVERY_STAGING_PROFILE,
-#             '/dev-afs25/': THISCOVERY_AFS25_PROFILE,
-#             '/test-afs25/': THISCOVERY_AFS25_PROFILE,
-#             '/dev-amp205/': THISCOVERY_AMP205_PROFILE,
-#             '/test-amp205/': THISCOVERY_AMP205_PROFILE,
-#         }
-#
-#         return namespace2profile_map.get(namespace)
-#
-#
+
+
+def namespace2profile(namespace):
+    """
+    Maps namespaces in dev_config.py to profiles in ~/.aws/credentials
+    """
+    if not running_on_aws():
+        from local.secrets import THISCOVERY_PROD_PROFILE, THISCOVERY_STAGING_PROFILE, THISCOVERY_AFS25_PROFILE, THISCOVERY_AMP205_PROFILE
+
+        namespace2profile_map = {
+            '/prod/': THISCOVERY_PROD_PROFILE,
+            '/staging/': THISCOVERY_STAGING_PROFILE,
+            '/dev-afs25/': THISCOVERY_AFS25_PROFILE,
+            '/test-afs25/': THISCOVERY_AFS25_PROFILE,
+            '/dev-amp205/': THISCOVERY_AMP205_PROFILE,
+            '/test-amp205/': THISCOVERY_AMP205_PROFILE,
+        }
+
+        return namespace2profile_map.get(namespace)
+
+
 # PRODUCTION_ENV_NAME = 'prod'
 # STAGING_ENV_NAME = 'staging'
 #
@@ -71,47 +71,47 @@ from pythonjsonlogger import jsonlogger
 # # endregion
 #
 #
-# # region Custom error classes and handling
-# class DetailedValueError(ValueError):
-#     def __init__(self, message, details):
-#         self.message = message
-#         self.details = details
-#
-#     def as_response_body(self):
-#         try:
-#             return json.dumps({'message': self.message, **self.details})
-#         except TypeError:
-#             print(f"message: {self.message}; details: {self.details}")
-#             return json.dumps({'message': self.message, **self.details})
-#
-#     def add_correlation_id(self, correlation_id):
-#         self.details['correlation_id'] = str(correlation_id)
-#
-#
-# class ObjectDoesNotExistError(DetailedValueError):
-#     pass
-#
-#
-# class DuplicateInsertError(DetailedValueError):
-#     pass
-#
-#
-# class PatchOperationNotSupportedError(DetailedValueError):
-#     pass
-#
-#
-# class PatchAttributeNotRecognisedError(DetailedValueError):
-#     pass
-#
-#
-# class PatchInvalidJsonError(DetailedValueError):
-#     pass
-#
-#
-# class DetailedIntegrityError(DetailedValueError):
-#     pass
-#
-#
+# region Custom error classes and handling
+class DetailedValueError(ValueError):
+    def __init__(self, message, details):
+        self.message = message
+        self.details = details
+
+    def as_response_body(self):
+        try:
+            return json.dumps({'message': self.message, **self.details})
+        except TypeError:
+            print(f"message: {self.message}; details: {self.details}")
+            return json.dumps({'message': self.message, **self.details})
+
+    def add_correlation_id(self, correlation_id):
+        self.details['correlation_id'] = str(correlation_id)
+
+
+class ObjectDoesNotExistError(DetailedValueError):
+    pass
+
+
+class DuplicateInsertError(DetailedValueError):
+    pass
+
+
+class PatchOperationNotSupportedError(DetailedValueError):
+    pass
+
+
+class PatchAttributeNotRecognisedError(DetailedValueError):
+    pass
+
+
+class PatchInvalidJsonError(DetailedValueError):
+    pass
+
+
+class DetailedIntegrityError(DetailedValueError):
+    pass
+
+
 # def error_as_response_body(error_msg, correlation_id):
 #     return json.dumps({'error': error_msg, 'correlation_id': str(correlation_id)})
 #
@@ -137,10 +137,10 @@ from pythonjsonlogger import jsonlogger
 #         os.unsetenv("TESTING")
 #
 #
-# def running_unit_tests():
-#     testing = os.getenv("TESTING")
-#     return testing == 'true'
-# # endregion
+def running_unit_tests():
+    testing = os.getenv("TESTING")
+    return testing == 'true'
+# endregion
 #
 #
 # # region Misc utilities
@@ -153,17 +153,17 @@ from pythonjsonlogger import jsonlogger
 # def get_file_as_string(path):
 #     with open(path, 'r') as f:
 #         return f.read()
-#
-#
-# def running_on_aws():
-#     """
-#     Checks if calling code is running on an AWS machine
-#     """
-#     try:
-#         region = os.environ['AWS_REGION']
-#     except:
-#         region = None
-#     return region is not None
+
+
+def running_on_aws():
+    """
+    Checks if calling code is running on an AWS machine
+    """
+    try:
+        region = os.environ['AWS_REGION']
+    except:
+        region = None
+    return region is not None
 #
 #
 # def now_with_tz():
@@ -247,57 +247,57 @@ from pythonjsonlogger import jsonlogger
 #         errorjson = {'boolean': s}
 #         raise DetailedValueError('invalid boolean', errorjson)
 # # endregion
-#
-#
-# # region boto3
-# # The default Boto3 session; autoloaded when needed.
-# DEFAULT_SESSION = None
-#
-#
-# def setup_default_session(profile_name):
-#     """
-#     Set up a default boto3 session, which sets profile_name and region_name if running locally
-#     """
-#     global DEFAULT_SESSION
-#     if running_on_aws():
-#         DEFAULT_SESSION = boto3.Session()
-#     else:
-#         DEFAULT_SESSION = boto3.Session(profile_name=profile_name, region_name=DEFAULT_AWS_REGION)
-#
-#
-# def _get_default_session(profile_name):
-#     """
-#     Get the default session, creating one if needed.
-#     """
-#     if DEFAULT_SESSION is None:
-#         setup_default_session(profile_name)
-#     return DEFAULT_SESSION
-#
-#
-# class BaseClient:
-#     def __init__(self, service_name, profile_name=None, client_type='low-level'):
-#         """
-#         Args:
-#             service_name (str): AWS service name (e.g. dynamodb, lambda, etc)
-#             profile_name (str): Profile in ~/.aws/credentials
-#             client_type (str): 'low-level' to create a boto3 low-level service client; or 'resource' to create a boto3 resource service client.
-#         """
-#         if (profile_name is None) and not running_on_aws():
-#             profile_name = namespace2profile(get_aws_namespace())
-#         session = _get_default_session(profile_name)
-#         if client_type == 'low-level':
-#             self.client = session.client(service_name)
-#         elif client_type == 'resource':
-#             self.client = session.resource(service_name)
-#         else:
-#             raise NotImplementedError(f"client_type can only be 'low-level' or 'resource', not {client_type}")
-#         self.logger = get_logger()
-#         self.aws_namespace = None
-#
-#     def get_namespace(self):
-#         if self.aws_namespace is None:
-#             self.aws_namespace = get_aws_namespace()[1:-1]
-#         return self.aws_namespace
+
+
+# region boto3
+# The default Boto3 session; autoloaded when needed.
+DEFAULT_SESSION = None
+
+
+def setup_default_session(profile_name):
+    """
+    Set up a default boto3 session, which sets profile_name and region_name if running locally
+    """
+    global DEFAULT_SESSION
+    if running_on_aws():
+        DEFAULT_SESSION = boto3.Session()
+    else:
+        DEFAULT_SESSION = boto3.Session(profile_name=profile_name, region_name=DEFAULT_AWS_REGION)
+
+
+def _get_default_session(profile_name):
+    """
+    Get the default session, creating one if needed.
+    """
+    if DEFAULT_SESSION is None:
+        setup_default_session(profile_name)
+    return DEFAULT_SESSION
+
+
+class BaseClient:
+    def __init__(self, service_name, profile_name=None, client_type='low-level'):
+        """
+        Args:
+            service_name (str): AWS service name (e.g. dynamodb, lambda, etc)
+            profile_name (str): Profile in ~/.aws/credentials
+            client_type (str): 'low-level' to create a boto3 low-level service client; or 'resource' to create a boto3 resource service client.
+        """
+        if (profile_name is None) and not running_on_aws():
+            profile_name = namespace2profile(get_aws_namespace())
+        session = _get_default_session(profile_name)
+        if client_type == 'low-level':
+            self.client = session.client(service_name)
+        elif client_type == 'resource':
+            self.client = session.resource(service_name)
+        else:
+            raise NotImplementedError(f"client_type can only be 'low-level' or 'resource', not {client_type}")
+        self.logger = get_logger()
+        self.aws_namespace = None
+
+    def get_namespace(self):
+        if self.aws_namespace is None:
+            self.aws_namespace = get_aws_namespace()[1:-1]
+        return self.aws_namespace
 #
 #
 # class SsmClient(BaseClient):
@@ -396,8 +396,8 @@ from pythonjsonlogger import jsonlogger
 #             assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'Call to boto3.client.create_secret failed with response: {response}'
 #         return response
 # # endregion
-#
-#
+
+
 # region Logging
 class _AnsiColorizer(object):
     """
@@ -525,10 +525,10 @@ def get_correlation_id(event):
         correlation_id = new_correlation_id()
     return str(correlation_id)
 # # endregion
-#
-#
-# # region Secrets processing
-# DEFAULT_AWS_REGION = 'eu-west-1'
+
+
+# region Secrets processing
+DEFAULT_AWS_REGION = 'eu-west-1'
 #
 #
 # def get_aws_region():
@@ -537,21 +537,21 @@ def get_correlation_id(event):
 #     except KeyError:
 #         region = DEFAULT_AWS_REGION
 #     return region
-#
-#
-# def get_aws_namespace():
-#     if running_on_aws():
-#         try:
-#             secrets_namespace = os.environ['SECRETS_NAMESPACE']
-#         except KeyError:
-#             raise DetailedValueError('SECRETS_NAMESPACE environment variable not defined', {})
-#     else:
-#         from common.dev_config import UNIT_TEST_NAMESPACE, SECRETS_NAMESPACE
-#         if running_unit_tests():
-#             secrets_namespace = UNIT_TEST_NAMESPACE
-#         else:
-#             secrets_namespace = SECRETS_NAMESPACE
-#     return secrets_namespace
+
+
+def get_aws_namespace():
+    if running_on_aws():
+        try:
+            secrets_namespace = os.environ['SECRETS_NAMESPACE']
+        except KeyError:
+            raise DetailedValueError('SECRETS_NAMESPACE environment variable not defined', {})
+    else:
+        from common.dev_config import UNIT_TEST_NAMESPACE, SECRETS_NAMESPACE
+        if running_unit_tests():
+            secrets_namespace = UNIT_TEST_NAMESPACE
+        else:
+            secrets_namespace = SECRETS_NAMESPACE
+    return secrets_namespace
 #
 #
 # def get_environment_name():
@@ -636,7 +636,7 @@ def get_correlation_id(event):
 #     finally:
 #         return secret
 #
-# # endregion
+# endregion
 #
 #
 # # region Country code/name processing

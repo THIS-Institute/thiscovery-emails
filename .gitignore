@@ -132,7 +132,7 @@ dmypy.json
 src/common/dev_config.py
 
 # local secrets file
-api/local/secrets.py
+src/local/secrets.py
 
 # sandbox
 /sandbox/
@@ -142,3 +142,4 @@ api/local/secrets.py
 /setup-sample-data.py
 /credentials
 /api/local/scratchpad.py
+
