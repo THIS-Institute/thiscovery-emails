@@ -23,21 +23,19 @@ Resources:
   SesAccessIncomingBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket:
-        Ref: "incoming"
+      Bucket: !Ref incoming
       PolicyDocument:
         Statement:
           - Action:
-              - "s3:PutObject"
-            Effect: "Allow"
-            Resource:
-              Fn::Join:
-                - ""
-                - - "arn:aws:s3:::"
-                  - Ref: "incoming"
-                  - "/*"
+              - s3:PutObject
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref incoming
+                - /*
             Principal:
-              Service: "ses.amazonaws.com"
+              Service: ses.amazonaws.com
             Condition:
               StringEquals:
                 aws:Referer: !Sub ${AWS::AccountId}
@@ -78,6 +76,8 @@ Resources:
       Tracing: Active
       Policies:
         - AWSXrayWriteOnlyAccess
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ForwardingMap
       Events:
         incoming:
           Type: S3
@@ -85,6 +85,10 @@ Resources:
             Bucket: !Ref incoming
             Events:
               - s3:ObjectCreated:*
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ForwardingMap
+          TABLE_ARN: !GetAtt ForwardingMap.Arn
   EmailServiceApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -107,6 +111,18 @@ Resources:
               responses: {}
       EndpointConfiguration: REGIONAL
       TracingEnabled: true
+  ForwardingMap:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
 Parameters:
   StackTagName:
     Type: String
