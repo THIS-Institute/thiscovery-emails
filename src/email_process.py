@@ -46,7 +46,7 @@ def create_message(message_content, message_obj_http_path, correlation_id=None):
     separator = ";"
     mail_object = email.message_from_string(message_content.decode('utf-8'))
     received_for = extract_received_for(mail_object)
-    recipient = get_forward_to_address(received_for, correlation_id=correlation_id)
+    recipient_list = get_forward_to_address(received_for, correlation_id=correlation_id)
 
     # Create a new subject line.
     subject_original = mail_object['Subject']
@@ -70,7 +70,7 @@ def create_message(message_content, message_obj_http_path, correlation_id=None):
     # Add subject, from and to lines.
     msg['Subject'] = subject
     msg['From'] = mail_object['From']
-    msg['To'] = recipient
+    msg['To'] = ", ".join(recipient_list)
 
     # Create a new MIME object.
     att = MIMEApplication(message_content, filename)
@@ -79,7 +79,7 @@ def create_message(message_content, message_obj_http_path, correlation_id=None):
     # Attach the file object to the message.
     msg.attach(att)
 
-    return recipient, msg.as_string()
+    return recipient_list, msg.as_string()
 
 
 def get_message_from_s3(s3_bucket_name, object_key, correlation_id=None):
@@ -92,11 +92,11 @@ def get_message_from_s3(s3_bucket_name, object_key, correlation_id=None):
 
 def forward_email(s3_bucket_name, object_key, correlation_id=None):
     message_content, message_obj_http_path = get_message_from_s3(s3_bucket_name, object_key, correlation_id)
-    recipient, output_message = create_message(message_content, message_obj_http_path, correlation_id)
+    recipient_list, output_message = create_message(message_content, message_obj_http_path, correlation_id)
     ses_client = SesClient()
     return ses_client.send_raw_email(
         Source='no-reply@thiscovery.org',
-        Destinations=[recipient],
+        Destinations=recipient_list,
         RawMessage={'Data': output_message}
     )
 
