@@ -27,7 +27,7 @@ def slack_message(environment, branch, message=None):
 def stackery_deployment(environment, branch):
     profile = utils.namespace2profile(utils.name2namespace(environment))
     try:
-        subprocess.run(['stackery', 'deploy', '--stack-name=thiscovery-core', f'--aws-profile={profile}',
+        subprocess.run(['stackery', 'deploy', '--stack-name=thiscovery-emails', f'--aws-profile={profile}',
                         f'--env-name={environment}', f'--git-ref={branch}'], check=True,
                        stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as err:
