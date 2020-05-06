@@ -33,15 +33,15 @@ import uuid
 # from http import HTTPStatus
 from pythonjsonlogger import jsonlogger
 # from timeit import default_timer as timer
-#
-#
-# # region constants
-# def name2namespace(name):
-#     return f'/{name}/'
-#
-#
-# def namespace2name(namespace):
-#     return namespace[1:-1]
+
+
+# region constants
+def name2namespace(name):
+    return f'/{name}/'
+
+
+def namespace2name(namespace):
+    return namespace[1:-1]
 
 
 def namespace2profile(namespace):
