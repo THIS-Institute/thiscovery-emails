@@ -24,25 +24,29 @@ from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 
 import common.utilities as utils
+from common.dynamodb_utilities import Dynamodb
 from common.s3_utilities import S3Client
 from common.ses_utilities import SesClient
 
 
-def get_forward_to_address(received_for):
-    pass
+def get_forward_to_address(received_for, correlation_id=None):
+    ddb_client = Dynamodb()
+    ddb_item = ddb_client.get_item(table_name='ForwardingMap', key=received_for, correlation_id=correlation_id)
+    if ddb_item is not None:
+        return ddb_item['forward-to']
 
 
-def extract_received_for(mail_object):
+def extract_received_for(mail_object, correlation_id=None):
     received_for_pattern = re.compile(r'for (.+@.+thiscovery\.org)')
     received_value = mail_object.get('Received')
     return received_for_pattern.search(received_value).group(1)
 
 
-def create_message(message_content, message_obj_http_path):
+def create_message(message_content, message_obj_http_path, correlation_id=None):
     separator = ";"
     mail_object = email.message_from_string(message_content.decode('utf-8'))
     received_for = extract_received_for(mail_object)
-    recipient = get_forward_to_address(received_for)
+    recipient = get_forward_to_address(received_for, correlation_id=correlation_id)
 
     # Create a new subject line.
     subject_original = mail_object['Subject']
@@ -78,7 +82,7 @@ def create_message(message_content, message_obj_http_path):
     return recipient, msg.as_string()
 
 
-def get_message_from_s3(s3_bucket_name, object_key):
+def get_message_from_s3(s3_bucket_name, object_key, correlation_id=None):
     s3_client = S3Client()
     message_obj_http_path = f"http://s3.console.aws.amazon.com/s3/object/{s3_bucket_name}/{object_key}?region={region}"
     message_obj = s3_client.get_object(bucket=s3_bucket_name, key=object_key)
@@ -86,9 +90,9 @@ def get_message_from_s3(s3_bucket_name, object_key):
     return message_content, message_obj_http_path
 
 
-def forward_email(s3_bucket_name, object_key):
-    message_content, message_obj_http_path = get_message_from_s3(s3_bucket_name, object_key)
-    recipient, output_message = create_message(message_content, message_obj_http_path)
+def forward_email(s3_bucket_name, object_key, correlation_id=None):
+    message_content, message_obj_http_path = get_message_from_s3(s3_bucket_name, object_key, correlation_id)
+    recipient, output_message = create_message(message_content, message_obj_http_path, correlation_id)
     ses_client = SesClient()
     return ses_client.send_raw_email(
         Source='no-reply@thiscovery.org',
@@ -106,7 +110,7 @@ def forward_email_handler(event, context):
     bucket_name = s3_dict['bucket']['name']
     obj_key = s3_dict['object']['key']
     logger.info("Processing message object", extra={'bucket_name': bucket_name, 'obj_key': obj_key})
-    return forward_email()
+    return forward_email(s3_bucket_name=bucket_name, object_key=obj_key, correlation_id=event['correlation_id'])
 
 # def send_email():
 #     global ses_client
