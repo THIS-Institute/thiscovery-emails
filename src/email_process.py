@@ -82,7 +82,9 @@ def create_message(message_content, message_obj_http_path, correlation_id=None):
     return recipient_list, msg.as_string()
 
 
-def get_message_from_s3(s3_bucket_name, object_key, correlation_id=None):
+def get_message_from_s3(s3_bucket_name, object_key, region=None, correlation_id=None):
+    if region is None:
+        region = utils.DEFAULT_AWS_REGION
     s3_client = S3Client()
     message_obj_http_path = f"http://s3.console.aws.amazon.com/s3/object/{s3_bucket_name}/{object_key}?region={region}"
     message_obj = s3_client.get_object(bucket=s3_bucket_name, key=object_key)
