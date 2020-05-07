@@ -28,7 +28,7 @@ import sys
 import uuid
 # import validators
 #
-# from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError
 # from dateutil import parser, tz
 # from http import HTTPStatus
 from pythonjsonlogger import jsonlogger
@@ -588,53 +588,53 @@ def get_aws_namespace():
 #         return ''
 #     else:
 #         return '&env=' + get_environment_name()
-#
-#
-# def get_secret(secret_name, namespace_override=None):
-#     logger = get_logger()
-#     # need to prepend secret name with namespace...
-#     if namespace_override is None:
-#         namespace = get_aws_namespace()
-#     else:
-#         namespace = namespace_override
-#
-#     if namespace is not None:
-#         secret_name = namespace + secret_name
-#
-#     logger.info('get_aws_secret: ' + secret_name)
-#
-#     secret = None
-#     client = SecretsManager()
-#
-#     try:
-#         get_secret_value_response = client.get_secret_value(secret_name)
-#         # logger.info('get_aws_secret:secret retrieved')
-#     except ClientError as e:
-#         if e.response['Error']['Code'] == 'ResourceNotFoundException':
-#             logger.error("The requested secret " + secret_name + " was not found")
-#         elif e.response['Error']['Code'] == 'InvalidRequestException':
-#             logger.error("The request was invalid due to:" + str(e))
-#         elif e.response['Error']['Code'] == 'InvalidParameterException':
-#             logger.error("The request had invalid params:" + str(e))
-#         else:
-#             logger.error("An unexpected exception occurred:" + str(e), exc_info=True)
-#         raise
-#     except:
-#         logger.error(sys.exc_info()[0])
-#     else:
-#         # logger.info('get_aws_secret:secret about to decode')
-#         # Decrypted secret using the associated KMS CMK
-#         # Depending on whether the secret was a string or binary, one of these fields will be populated
-#         if 'SecretString' in get_secret_value_response:
-#             secret = get_secret_value_response['SecretString']
-#         else:
-#             binary_secret_data = get_secret_value_response['SecretBinary']
-#         # logger.info('get_aws_secret:secret decoded')
-#         # logger.info('secret:' + secret)
-#
-#         secret = json.loads(secret)
-#     finally:
-#         return secret
+
+
+def get_secret(secret_name, namespace_override=None):
+    logger = get_logger()
+    # need to prepend secret name with namespace...
+    if namespace_override is None:
+        namespace = get_aws_namespace()
+    else:
+        namespace = namespace_override
+
+    if namespace is not None:
+        secret_name = namespace + secret_name
+
+    logger.info('get_aws_secret: ' + secret_name)
+
+    secret = None
+    client = SecretsManager()
+
+    try:
+        get_secret_value_response = client.get_secret_value(secret_name)
+        # logger.info('get_aws_secret:secret retrieved')
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            logger.error("The requested secret " + secret_name + " was not found")
+        elif e.response['Error']['Code'] == 'InvalidRequestException':
+            logger.error("The request was invalid due to:" + str(e))
+        elif e.response['Error']['Code'] == 'InvalidParameterException':
+            logger.error("The request had invalid params:" + str(e))
+        else:
+            logger.error("An unexpected exception occurred:" + str(e), exc_info=True)
+        raise
+    except:
+        logger.error(sys.exc_info()[0])
+    else:
+        # logger.info('get_aws_secret:secret about to decode')
+        # Decrypted secret using the associated KMS CMK
+        # Depending on whether the secret was a string or binary, one of these fields will be populated
+        if 'SecretString' in get_secret_value_response:
+            secret = get_secret_value_response['SecretString']
+        else:
+            binary_secret_data = get_secret_value_response['SecretBinary']
+        # logger.info('get_aws_secret:secret decoded')
+        # logger.info('secret:' + secret)
+
+        secret = json.loads(secret)
+    finally:
+        return secret
 #
 # endregion
 #

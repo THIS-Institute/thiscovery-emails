@@ -93,8 +93,7 @@ def get_message_from_s3(s3_bucket_name, object_key, region=None, correlation_id=
 
 
 def forward_email(message_id, correlation_id=None):
-    secrets_client = utils.SecretsManager()
-    incoming_email_bucket = secrets_client.get_secret_value(f"{utils.get_aws_namespace()}incoming-email-bucket")['name']
+    incoming_email_bucket = utils.get_secret("incoming-email-bucket")['name']
     message_content, message_obj_http_path = get_message_from_s3(incoming_email_bucket, message_id, correlation_id)
     recipient_list, output_message = create_message(message_content, message_obj_http_path, correlation_id)
     ses_client = SesClient()
