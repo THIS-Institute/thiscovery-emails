@@ -78,6 +78,8 @@ Resources:
         - AWSXrayWriteOnlyAccess
         - DynamoDBCrudPolicy:
             TableName: !Ref ForwardingMap
+        - S3CrudPolicy:
+            BucketName: !Ref incoming
       Events:
         incoming:
           Type: S3
@@ -89,6 +91,8 @@ Resources:
         Variables:
           TABLE_NAME: !Ref ForwardingMap
           TABLE_ARN: !GetAtt ForwardingMap.Arn
+          BUCKET_NAME: !Ref incoming
+          BUCKET_ARN: !GetAtt incoming.Arn
   EmailServiceApi:
     Type: AWS::Serverless::Api
     Properties:
