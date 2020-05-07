@@ -335,67 +335,67 @@ class BaseClient:
 #         )
 #         assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'call to boto3.client.put_parameter failed with response: {response}'
 #         return response
-#
-#
-# class SecretsManager(BaseClient):
-#     def __init__(self):
-#         super().__init__('secretsmanager')
-#
-#     def _prefix_name(self, name, prefix):
-#         if prefix is None:
-#             prefix = f"/{super().get_namespace()}/"
-#         return prefix + name
-#
-#     def _create_secret(self, secret_id, value):
-#         """
-#         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secretsmanager.html#SecretsManager.Client.create_secret
-#         """
-#         return self.client.create_secret(
-#             Name=secret_id,
-#             SecretString=value,
-#         )
-#
-#     def _update_secret(self, secret_id, value):
-#         """
-#         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secretsmanager.html#SecretsManager.Client.update_secret
-#         """
-#         return self.client.update_secret(
-#             SecretId=secret_id,
-#             SecretString=value,
-#         )
-#
-#     def get_secret_value(self, secret_id):
-#         """
-#         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secretsmanager.html#SecretsManager.Client.get_secret_value
-#         """
-#         return self.client.get_secret_value(
-#             SecretId=secret_id,
-#         )
-#
-#     def create_or_update_secret(self, name, value, prefix=None):
-#         """
-#         Creates or updates a secret in AWS Secrets Manager.
-#
-#         Args:
-#             name (str): the secret name, excluding an environment prefix
-#             value (json or dict): key/value pairs in either dict or JSON string format
-#             prefix (str): if None, environment name will be used as prefix; use an empty string in calls where no prefix is required
-#
-#         """
-#         secret_id = self._prefix_name(name, prefix)
-#         if isinstance(value, dict):
-#             value = json.dumps(value)
-#         self.logger.debug(f'Adding or updating Secret {secret_id} with value {value}')
-#         try:
-#             response = self._update_secret(secret_id, value)
-#             assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'Call to boto3.client.update_secret failed with response: {response}'
-#         except Exception as exception:
-#             error_message = exception.args[0]
-#             self.logger.error(error_message)
-#             response = self._create_secret(secret_id, value)
-#             assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'Call to boto3.client.create_secret failed with response: {response}'
-#         return response
-# # endregion
+
+
+class SecretsManager(BaseClient):
+    def __init__(self):
+        super().__init__('secretsmanager')
+
+    def _prefix_name(self, name, prefix):
+        if prefix is None:
+            prefix = f"/{super().get_namespace()}/"
+        return prefix + name
+
+    def _create_secret(self, secret_id, value):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secretsmanager.html#SecretsManager.Client.create_secret
+        """
+        return self.client.create_secret(
+            Name=secret_id,
+            SecretString=value,
+        )
+
+    def _update_secret(self, secret_id, value):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secretsmanager.html#SecretsManager.Client.update_secret
+        """
+        return self.client.update_secret(
+            SecretId=secret_id,
+            SecretString=value,
+        )
+
+    def get_secret_value(self, secret_id):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secretsmanager.html#SecretsManager.Client.get_secret_value
+        """
+        return self.client.get_secret_value(
+            SecretId=secret_id,
+        )
+
+    def create_or_update_secret(self, name, value, prefix=None):
+        """
+        Creates or updates a secret in AWS Secrets Manager.
+
+        Args:
+            name (str): the secret name, excluding an environment prefix
+            value (json or dict): key/value pairs in either dict or JSON string format
+            prefix (str): if None, environment name will be used as prefix; use an empty string in calls where no prefix is required
+
+        """
+        secret_id = self._prefix_name(name, prefix)
+        if isinstance(value, dict):
+            value = json.dumps(value)
+        self.logger.debug(f'Adding or updating Secret {secret_id} with value {value}')
+        try:
+            response = self._update_secret(secret_id, value)
+            assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'Call to boto3.client.update_secret failed with response: {response}'
+        except Exception as exception:
+            error_message = exception.args[0]
+            self.logger.error(error_message)
+            response = self._create_secret(secret_id, value)
+            assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'Call to boto3.client.create_secret failed with response: {response}'
+        return response
+# endregion
 
 
 # region Logging

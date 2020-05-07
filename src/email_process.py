@@ -92,8 +92,10 @@ def get_message_from_s3(s3_bucket_name, object_key, region=None, correlation_id=
     return message_content, message_obj_http_path
 
 
-def forward_email(s3_bucket_name, object_key, correlation_id=None):
-    message_content, message_obj_http_path = get_message_from_s3(s3_bucket_name, object_key, correlation_id)
+def forward_email(message_id, correlation_id=None):
+    secrets_client = utils.SecretsManager()
+    incoming_email_bucket = secrets_client.get_secret_value(f"{utils.get_aws_namespace()}incoming-email-bucket")['name']
+    message_content, message_obj_http_path = get_message_from_s3(incoming_email_bucket, message_id, correlation_id)
     recipient_list, output_message = create_message(message_content, message_obj_http_path, correlation_id)
     ses_client = SesClient()
     return ses_client.send_raw_email(
@@ -107,12 +109,9 @@ def forward_email(s3_bucket_name, object_key, correlation_id=None):
 def forward_email_handler(event, context):
     logger = event['logger']
     logger.debug('Logging event', extra={'event': event})
-
-    s3_dict = event['Records'][0]['s3']
-    bucket_name = s3_dict['bucket']['name']
-    obj_key = s3_dict['object']['key']
-    logger.info("Processing message object", extra={'bucket_name': bucket_name, 'obj_key': obj_key})
-    return forward_email(s3_bucket_name=bucket_name, object_key=obj_key, correlation_id=event['correlation_id'])
+    message_id = event['Records'][0]['ses']['mail']['messageId']
+    logger.info("Processing message object", extra={'message_id': message_id})
+    return forward_email(message_id=message_id, correlation_id=event['correlation_id'])
 
 # def send_email():
 #     global ses_client
