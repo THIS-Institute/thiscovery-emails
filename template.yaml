@@ -1,6 +1,13 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Resources:
+  Permission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ForwardEmail
+      Principal: ses.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
   DefaultRuleSet:
     Type: AWS::SES::ReceiptRuleSet
     Properties:
@@ -12,6 +19,8 @@ Resources:
         Actions:
           - S3Action:
               BucketName: !Ref incoming
+          - LambdaAction:
+              FunctionArn: !GetAtt ForwardEmail.Arn
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMail
       RuleSetName: !Ref DefaultRuleSet
@@ -80,13 +89,6 @@ Resources:
             TableName: !Ref ForwardingMap
         - S3CrudPolicy:
             BucketName: !Ref incoming
-      Events:
-        incoming:
-          Type: S3
-          Properties:
-            Bucket: !Ref incoming
-            Events:
-              - s3:ObjectCreated:*
       Environment:
         Variables:
           TABLE_NAME: !Ref ForwardingMap
