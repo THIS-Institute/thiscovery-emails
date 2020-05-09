@@ -6,8 +6,8 @@ import sys
 import requests
 
 import src.common.utilities as utils
-from src.common.dev_config import SECRETS_NAMESPACE
-from src.local.secrets import STACKERY_CREDENTIALS, SLACK_DEPLOYMENT_NOTIFIER_WEBHOOKS
+from local.dev_config import SECRETS_NAMESPACE
+from local.secrets import STACKERY_CREDENTIALS, SLACK_DEPLOYMENT_NOTIFIER_WEBHOOKS
 
 
 def slack_message(environment, branch, message=None):
