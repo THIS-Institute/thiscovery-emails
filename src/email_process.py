@@ -37,7 +37,7 @@ def get_forward_to_address(received_for, correlation_id=None):
 
 
 def extract_received_for(mail_object, correlation_id=None):
-    received_for_pattern = re.compile(r'for (.+@.+thiscovery\.org)')
+    received_for_pattern = re.compile(r'for (.+@.*thiscovery\.org)')
     received_value = mail_object.get('Received')
     return received_for_pattern.search(received_value).group(1)
 

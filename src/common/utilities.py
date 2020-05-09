@@ -129,14 +129,14 @@ class DetailedIntegrityError(DetailedValueError):
 # # endregion
 #
 #
-# # region unit test methods
-# def set_running_unit_tests(flag):
-#     if flag:
-#         os.environ["TESTING"] = 'true'
-#     else:
-#         os.unsetenv("TESTING")
-#
-#
+# region unit test methods
+def set_running_unit_tests(flag):
+    if flag:
+        os.environ["TESTING"] = 'true'
+    else:
+        os.unsetenv("TESTING")
+
+
 def running_unit_tests():
     testing = os.getenv("TESTING")
     return testing == 'true'
@@ -546,7 +546,7 @@ def get_aws_namespace():
         except KeyError:
             raise DetailedValueError('SECRETS_NAMESPACE environment variable not defined', {})
     else:
-        from common.dev_config import UNIT_TEST_NAMESPACE, SECRETS_NAMESPACE
+        from local.dev_config import UNIT_TEST_NAMESPACE, SECRETS_NAMESPACE
         if running_unit_tests():
             secrets_namespace = UNIT_TEST_NAMESPACE
         else:

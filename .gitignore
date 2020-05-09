@@ -129,10 +129,10 @@ dmypy.json
 .pyre/
 
 # individual development config settings
-src/common/dev_config.py
+/local/dev_config.py
 
 # local secrets file
-src/local/secrets.py
+/local/secrets.py
 
 # sandbox
 /sandbox/
@@ -141,4 +141,6 @@ src/local/secrets.py
 /setup-sample-data.py
 /credentials
 /api/local/scratchpad.py
+
+/tests/unit_tests/test_message.mime
 
