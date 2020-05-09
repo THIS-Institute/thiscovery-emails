@@ -46,3 +46,9 @@ class TestEmailProcess(test_utils.BaseTestCase):
     def test_get_forward_to_address_ok(self):
         for k, v in TEST_FORWARDING_MAP.items():
             self.assertEqual(v, ep.get_forward_to_address(k))
+
+    def test_create_message(self):
+        with open("test_message.mime") as f:
+            message_content = f.read()
+            # todo: finish writing this test
+

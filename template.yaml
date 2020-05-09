@@ -84,6 +84,7 @@ Resources:
       Timeout: !Ref EnvConfiglambdatimeoutAsString
       Tracing: Active
       Policies:
+        - AmazonSESFullAccess
         - AWSXrayWriteOnlyAccess
         - DynamoDBCrudPolicy:
             TableName: !Ref ForwardingMap
