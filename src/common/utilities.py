@@ -30,7 +30,7 @@ import uuid
 #
 from botocore.exceptions import ClientError
 # from dateutil import parser, tz
-# from http import HTTPStatus
+from http import HTTPStatus
 from pythonjsonlogger import jsonlogger
 # from timeit import default_timer as timer
 
@@ -112,23 +112,23 @@ class DetailedIntegrityError(DetailedValueError):
     pass
 
 
-# def error_as_response_body(error_msg, correlation_id):
-#     return json.dumps({'error': error_msg, 'correlation_id': str(correlation_id)})
-#
-#
-# def log_exception_and_return_edited_api_response(exception, status_code, logger_instance, correlation_id):
-#     if isinstance(exception, DetailedValueError):
-#         exception.add_correlation_id(correlation_id)
-#         logger_instance.error(exception)
-#         return {"statusCode": status_code, "body": exception.as_response_body()}
-#
-#     else:
-#         error_message = exception.args[0]
-#         logger_instance.error(error_message, extra={'correlation_id': correlation_id})
-#         return {"statusCode": status_code, "body": error_as_response_body(error_message, correlation_id)}
-# # endregion
-#
-#
+def error_as_response_body(error_msg, correlation_id):
+    return json.dumps({'error': error_msg, 'correlation_id': str(correlation_id)})
+
+
+def log_exception_and_return_edited_api_response(exception, status_code, logger_instance, correlation_id):
+    if isinstance(exception, DetailedValueError):
+        exception.add_correlation_id(correlation_id)
+        logger_instance.error(exception)
+        return {"statusCode": status_code, "body": exception.as_response_body()}
+
+    else:
+        error_message = exception.args[0]
+        logger_instance.error(error_message, extra={'correlation_id': correlation_id})
+        return {"statusCode": status_code, "body": error_as_response_body(error_message, correlation_id)}
+# endregion
+
+
 # region unit test methods
 def set_running_unit_tests(flag):
     if flag:
@@ -670,30 +670,30 @@ def get_secret(secret_name, namespace_override=None):
 #
 # countries = load_countries()
 # # endregion
-#
-#
+
+
 # region decorators
-# def api_error_handler(func):
-#     """
-#     Error handler decorator for thiscovery API endpoints. Use with lambda_wrapper as the outer decorator. E.g.:
-#         @lambda_wrapper
-#         @api_error_handler
-#         def decorated_function():
-#     """
-#     @functools.wraps(func)
-#     def wrapper(*args, **kwargs):
-#         correlation_id = args[0]['correlation_id']
-#         try:
-#             return func(*args, **kwargs)
-#         except DuplicateInsertError as err:
-#             return log_exception_and_return_edited_api_response(err, HTTPStatus.CONFLICT, logger, correlation_id)
-#         except ObjectDoesNotExistError as err:
-#             return log_exception_and_return_edited_api_response(err, HTTPStatus.NOT_FOUND, logger, correlation_id)
-#         except (PatchAttributeNotRecognisedError, PatchOperationNotSupportedError, PatchInvalidJsonError, DetailedIntegrityError, DetailedValueError) as err:
-#             return log_exception_and_return_edited_api_response(err, HTTPStatus.BAD_REQUEST, logger, correlation_id)
-#         except Exception as err:
-#             return log_exception_and_return_edited_api_response(err, HTTPStatus.INTERNAL_SERVER_ERROR, logger, correlation_id)
-#     return wrapper
+def api_error_handler(func):
+    """
+    Error handler decorator for thiscovery API endpoints. Use with lambda_wrapper as the outer decorator. E.g.:
+        @lambda_wrapper
+        @api_error_handler
+        def decorated_function():
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        correlation_id = args[0]['correlation_id']
+        try:
+            return func(*args, **kwargs)
+        except DuplicateInsertError as err:
+            return log_exception_and_return_edited_api_response(err, HTTPStatus.CONFLICT, logger, correlation_id)
+        except ObjectDoesNotExistError as err:
+            return log_exception_and_return_edited_api_response(err, HTTPStatus.NOT_FOUND, logger, correlation_id)
+        except (PatchAttributeNotRecognisedError, PatchOperationNotSupportedError, PatchInvalidJsonError, DetailedIntegrityError, DetailedValueError) as err:
+            return log_exception_and_return_edited_api_response(err, HTTPStatus.BAD_REQUEST, logger, correlation_id)
+        except Exception as err:
+            return log_exception_and_return_edited_api_response(err, HTTPStatus.INTERNAL_SERVER_ERROR, logger, correlation_id)
+    return wrapper
 
 
 def lambda_wrapper(func):

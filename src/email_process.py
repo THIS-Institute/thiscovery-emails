@@ -16,8 +16,8 @@
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
 import email
-# import http
-# import json
+import http
+import json
 import re
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -112,19 +112,30 @@ def forward_email_handler(event, context):
     logger.info("Processing message object", extra={'message_id': message_id})
     return forward_email(message_id=message_id, correlation_id=event['correlation_id'])
 
-# def send_email():
-#     global ses_client
-#     if ses_client is None:
-#         ses_client = SesClient()
-#     ses_client.send_email()
-#
-#
-# @utils.lambda_wrapper
-# @utils.api_error_handler
-# def send_email_api(event, context):
-#     logger = event['logger']
-#     correlation_id = event['correlation_id']
-#     email_dict = json.loads(event['body'])
-#     logger.info('API call', extra={'email_dict': email_dict, 'correlation_id': correlation_id})
-#     new_user_task = create_user_task(ut_json, correlation_id)
-#     return {"statusCode": http.HTTPStatus.NO_CONTENT, "body": json.dumps(new_user_task)}
+
+def send_email(to_address, subject, message_text, message_html, correlation_id=None):
+    ses_client = SesClient()
+    return ses_client.send_simple_email(
+        "no-reply@thiscovery.org",
+        to_=to_address,
+        subject=subject,
+        body_text=message_text,
+        body_html=message_html,
+    )
+
+
+@utils.lambda_wrapper
+@utils.api_error_handler
+def send_email_api(event, context):
+    logger = event['logger']
+    correlation_id = event['correlation_id']
+    email_dict = json.loads(event['body'])
+    logger.info('API call', extra={'email_dict': email_dict, 'correlation_id': correlation_id})
+    status_code = send_email(
+        email_dict['to'],
+        email_dict['subject'],
+        email_dict['message_text'],
+        email_dict['message_html'],
+        correlation_id
+    )
+    return {"statusCode": status_code}

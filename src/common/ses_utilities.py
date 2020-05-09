@@ -57,6 +57,7 @@ class SesClient(utils.BaseClient):
                                        },
                                    },
                                },
+                               **kwargs
                                )
 
     def send_email(self, source, destination, message, **kwargs):

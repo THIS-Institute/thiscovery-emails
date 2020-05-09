@@ -62,6 +62,7 @@ Resources:
       Timeout: !Ref EnvConfiglambdatimeoutAsString
       Tracing: Active
       Policies:
+        - AmazonSESFullAccess
         - AWSXrayWriteOnlyAccess
       Events:
         EmailServiceApiPOSTv1send:
