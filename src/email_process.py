@@ -94,7 +94,7 @@ def get_message_from_s3(s3_bucket_name, object_key, region=None, correlation_id=
 
 def forward_email(message_id, correlation_id=None):
     incoming_email_bucket = utils.get_secret("incoming-email-bucket")['name']
-    message_content, message_obj_http_path = get_message_from_s3(incoming_email_bucket, message_id, correlation_id)
+    message_content, message_obj_http_path = get_message_from_s3(incoming_email_bucket, message_id, correlation_id=correlation_id)
     recipient_list, output_message = create_message(message_content, message_obj_http_path, correlation_id)
     ses_client = SesClient()
     return ses_client.send_raw_email(
@@ -125,7 +125,7 @@ def send_email(to_address, subject, message_text, message_html, correlation_id=N
 
 
 @utils.lambda_wrapper
-@utils.api_error_handler
+# @utils.api_error_handler
 def send_email_api(event, context):
     logger = event['logger']
     correlation_id = event['correlation_id']
@@ -134,8 +134,8 @@ def send_email_api(event, context):
     status_code = send_email(
         email_dict['to'],
         email_dict['subject'],
-        email_dict['message_text'],
-        email_dict['message_html'],
+        email_dict['body_text'],
+        email_dict['body_html'],
         correlation_id
     )
     return {"statusCode": status_code}

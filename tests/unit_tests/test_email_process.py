@@ -16,6 +16,7 @@
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
 import email
+import json
 import unittest
 
 from http import HTTPStatus
@@ -44,6 +45,7 @@ class TestEmailProcessLocal(unittest.TestCase):
 
 
 class TestEmailProcess(test_utils.BaseTestCase):
+    send_email_api_endpoint = "v1/send"
 
     def test_get_forward_to_address_ok(self):
         for k, v in TEST_FORWARDING_MAP.items():
@@ -56,7 +58,7 @@ class TestEmailProcess(test_utils.BaseTestCase):
 
     def test_send_email_api(self):
         expected_status = HTTPStatus.OK
-        body_json = {
+        email_dict = {
             "to": "test@thiscovery.org",
             "subject": "Test send email api",
             "body_text": "Lorem ipsum dolor sit amet, mea at voluptua delectus mediocritatem. "
@@ -71,7 +73,6 @@ class TestEmailProcess(test_utils.BaseTestCase):
                          "Dico mazim quidam nam at, eu eos maiorum inimicus gloriatur. "
                          "Vim at lorem moderatius, decore iisque scribentur mel ne, eros signiferumque ei vel.</p>",
         }
-        result = test_utils.test_post(ep.send_email_api, )
-
-
-
+        body_json = json.dumps(email_dict)
+        result = test_utils.test_post(ep.send_email_api, self.send_email_api_endpoint, request_body=body_json)
+        self.assertEqual(expected_status, result['statusCode'])
