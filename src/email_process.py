@@ -125,7 +125,7 @@ def send_email(to_address, subject, message_text, message_html, correlation_id=N
 
 
 @utils.lambda_wrapper
-# @utils.api_error_handler
+@utils.api_error_handler
 def send_email_api(event, context):
     logger = event['logger']
     correlation_id = event['correlation_id']

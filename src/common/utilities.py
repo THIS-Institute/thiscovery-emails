@@ -23,7 +23,7 @@ import json
 import logging
 import os
 # import re
-# import requests
+import requests
 import sys
 import uuid
 # import validators
@@ -716,29 +716,29 @@ def lambda_wrapper(func):
         return result
     return thiscovery_lambda_wrapper
 # endregion
-#
-#
-# # region aws api requests
-# def aws_request(method, endpoint_url, base_url, params=None, data=None, aws_api_key=None):
-#     full_url = base_url + endpoint_url
-#     headers = {'Content-Type': 'application/json'}
-#
-#     if aws_api_key is None:
-#         headers['x-api-key'] = get_secret('aws-connection')['aws-api-key']
-#     else:
-#         headers['x-api-key'] = aws_api_key
-#
-#     try:
-#         response = requests.request(
-#             method=method,
-#             url=full_url,
-#             params=params,
-#             headers=headers,
-#             data=data,
-#         )
-#         return {'statusCode': response.status_code, 'body': response.text}
-#     except Exception as err:
-#         raise err
+
+
+# region aws api requests
+def aws_request(method, endpoint_url, base_url, params=None, data=None, aws_api_key=None):
+    full_url = base_url + endpoint_url
+    headers = {'Content-Type': 'application/json'}
+
+    if aws_api_key is None:
+        headers['x-api-key'] = get_secret('aws-connection')['aws-api-key']
+    else:
+        headers['x-api-key'] = aws_api_key
+
+    try:
+        response = requests.request(
+            method=method,
+            url=full_url,
+            params=params,
+            headers=headers,
+            data=data,
+        )
+        return {'statusCode': response.status_code, 'body': response.text}
+    except Exception as err:
+        raise err
 #
 #
 # def aws_get(endpoint_url, base_url, params):
@@ -751,4 +751,4 @@ def lambda_wrapper(func):
 #
 # def aws_patch(endpoint_url, base_url, request_body):
 #     return aws_request(method='PATCH', endpoint_url=endpoint_url, base_url=base_url, data=request_body)
-# # endregion
+# endregion
