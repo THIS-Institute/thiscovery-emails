@@ -56,7 +56,7 @@ Resources:
         - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
         - ResourceName: SendEmail
       CodeUri: src
-      Handler: email_process.send_email
+      Handler: email_process.send_email_api
       Runtime: python3.7
       MemorySize: !Ref EnvConfiglambdamemorysizeAsString
       Timeout: !Ref EnvConfiglambdatimeoutAsString
