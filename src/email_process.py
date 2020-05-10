@@ -129,6 +129,7 @@ def send_email(to_address, subject, message_text, message_html, correlation_id=N
 def send_email_api(event, context):
     logger = event['logger']
     correlation_id = event['correlation_id']
+    logger.debug('Logging event', extra={'event': event})
     email_dict = json.loads(event['body'])
     logger.info('API call', extra={'email_dict': email_dict, 'correlation_id': correlation_id})
     status_code = send_email(
