@@ -63,10 +63,10 @@ class AlwaysOnAwsTestCase(BaseTestCase):
     pass
 
 
-# def _aws_request(method, url, params=None, data=None, aws_api_key=None):
-#     return utils.aws_request(method, url, AWS_TEST_API, params=params, data=data, aws_api_key=aws_api_key)
-#
-#
+def _aws_request(method, url, params=None, data=None, aws_api_key=None):
+    return utils.aws_request(method, url, AWS_TEST_API, params=params, data=data, aws_api_key=aws_api_key)
+
+
 # def aws_get(url, params):
 #     return _aws_request(method='GET', url=url, params=params)
 #
@@ -79,37 +79,37 @@ class AlwaysOnAwsTestCase(BaseTestCase):
 #     return _aws_request(method='PATCH', url=url, data=request_body)
 #
 #
-# def _test_request(request_method, local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None, aws_api_key=None,
-#                   correlation_id=None):
-#     logger = utils.get_logger()
-#
-#     if tests_running_on_aws():
-#         if path_parameters is not None:
-#             url = aws_url + '/' + path_parameters['id']
-#         else:
-#             url = aws_url
-#         logger.info(f'Url passed to _aws_request: {url}', extra={'path_parameters': path_parameters, 'querystring_parameters': querystring_parameters})
-#         return _aws_request(method=request_method, url=url, params=querystring_parameters, data=request_body, aws_api_key=aws_api_key)
-#     else:
-#         event = {}
-#         if path_parameters is not None:
-#             event['pathParameters'] = path_parameters
-#         if querystring_parameters is not None:
-#             event['queryStringParameters'] = querystring_parameters
-#         if request_body is not None:
-#             event['body'] = request_body
-#         return local_method(event, correlation_id)
-#
-#
+def _test_request(request_method, local_method, aws_url, path_parameters=None, querystring_parameters=None, request_body=None, aws_api_key=None,
+                  correlation_id=None):
+    logger = utils.get_logger()
+
+    if tests_running_on_aws():
+        if path_parameters is not None:
+            url = aws_url + '/' + path_parameters['id']
+        else:
+            url = aws_url
+        logger.info(f'Url passed to _aws_request: {url}', extra={'path_parameters': path_parameters, 'querystring_parameters': querystring_parameters})
+        return _aws_request(method=request_method, url=url, params=querystring_parameters, data=request_body, aws_api_key=aws_api_key)
+    else:
+        event = {}
+        if path_parameters is not None:
+            event['pathParameters'] = path_parameters
+        if querystring_parameters is not None:
+            event['queryStringParameters'] = querystring_parameters
+        if request_body is not None:
+            event['body'] = request_body
+        return local_method(event, correlation_id)
+
+
 # def test_get(local_method, aws_url, path_parameters=None, querystring_parameters=None, aws_api_key=None, correlation_id=None):
 #     return _test_request('GET', local_method, aws_url, path_parameters=path_parameters,
 #                          querystring_parameters=querystring_parameters, aws_api_key=aws_api_key, correlation_id=correlation_id)
 #
 #
-# def test_post(local_method, aws_url, path_parameters=None, request_body=None, correlation_id=None):
-#     return _test_request('POST', local_method, aws_url, path_parameters=path_parameters, request_body=request_body, correlation_id=correlation_id)
-#
-#
+def test_post(local_method, aws_url, path_parameters=None, request_body=None, correlation_id=None):
+    return _test_request('POST', local_method, aws_url, path_parameters=path_parameters, request_body=request_body, correlation_id=correlation_id)
+
+
 # def test_patch(local_method, aws_url, path_parameters=None, request_body=None, correlation_id=None):
 #     return _test_request('PATCH', local_method, aws_url, path_parameters=path_parameters, request_body=request_body, correlation_id=correlation_id)
 #

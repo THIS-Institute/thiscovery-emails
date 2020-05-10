@@ -18,6 +18,8 @@
 import email
 import unittest
 
+from http import HTTPStatus
+
 import src.common.utilities as utils
 import src.email_process as ep
 import tests.testing_utilities as test_utils
@@ -51,4 +53,25 @@ class TestEmailProcess(test_utils.BaseTestCase):
         with open("test_message.mime") as f:
             message_content = f.read()
             # todo: finish writing this test
+
+    def test_send_email_api(self):
+        expected_status = HTTPStatus.OK
+        body_json = {
+            "to": "test@thiscovery.org",
+            "subject": "Test send email api",
+            "body_text": "Lorem ipsum dolor sit amet, mea at voluptua delectus mediocritatem. "
+                         "Duis sententiae duo cu, solum atqui volumus no vel, nam tation alienum at. "
+                         "Soluta debitis ea mel. Sea laboramus intellegat accommodare te, vix ne etiam maiestatis. "
+                         "Dico mazim quidam nam at, eu eos maiorum inimicus gloriatur. "
+                         "Vim at lorem moderatius, decore iisque scribentur mel ne, eros signiferumque ei vel.",
+            "body_html": "<h3>Lorem ipsum dolor sit amet, mea at voluptua delectus mediocritatem.</h3> "
+                         '<p style="text-align: center;">Duis sententiae duo cu, solum atqui volumus no vel, nam tation alienum at.</p>  '
+                         '<p><a href="https://www.thiscovery.org/" target="_blank">Soluta debitis ea mel. '
+                         'Sea laboramus intellegat accommodare te, vix ne etiam maiestatis.</a> '
+                         "Dico mazim quidam nam at, eu eos maiorum inimicus gloriatur. "
+                         "Vim at lorem moderatius, decore iisque scribentur mel ne, eros signiferumque ei vel.</p>",
+        }
+        result = test_utils.test_post(ep.send_email_api, )
+
+
 

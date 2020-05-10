@@ -104,8 +104,8 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub
-        - ${ResourceName} From Stack ${StackTagName} Environment ${EnvironmentTagName}
-        - ResourceName: EmailServiceApi
+        - ${ResourceName} Env ${EnvironmentTagName}
+        - ResourceName: Thiscovery Email Service API
       StageName: !Ref EnvironmentAPIGatewayStageName
       DefinitionBody:
         swagger: '2.0'
