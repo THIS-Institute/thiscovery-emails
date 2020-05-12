@@ -94,7 +94,7 @@ def create_message(message_content, message_obj_http_path, correlation_id=None):
 
     # Add subject, from and to lines.
     msg['Subject'] = subject
-    msg['From'] = mail_object['From']
+    msg['From'] = 'no-reply@thiscovery.org'
     msg['To'] = ", ".join(recipient_list)
 
     # Create a new MIME object.
