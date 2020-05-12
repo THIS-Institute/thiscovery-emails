@@ -465,23 +465,23 @@ class ColorHandler(logging.StreamHandler):
         self.stream.write(self.format(record) + "\n", color)
 
 
-# class EpsagonHandler(logging.Handler):
-#     def __init__(self):
-#         super().__init__()
-#         try:
-#             self.running_tests = get_secret('runtime-parameters')['running-tests']
-#         except TypeError:  # get_secret('runtime-parameters') is None
-#             self.running_tests = 'false'
-#
-#     def emit(self, exception_instance):
-#         if (self.running_tests == 'false') or (get_aws_namespace() in [PRODUCTION_NAMESPACE, STAGING_NAMESPACE]):
-#             epsagon.error(exception_instance)
-#         elif self.running_tests == 'true':
-#             pass
-#         else:
-#             raise AttributeError(f'Secret runtime-parameters.running-tests is neither "true" nor "false": {self.running_tests}')
-#
-#
+class EpsagonHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+        try:
+            self.running_tests = get_secret('runtime-parameters')['running-tests']
+        except TypeError:  # get_secret('runtime-parameters') is None
+            self.running_tests = 'false'
+
+    def emit(self, exception_instance):
+        if (self.running_tests == 'false') or (get_aws_namespace() in [PRODUCTION_NAMESPACE, STAGING_NAMESPACE]):
+            epsagon.error(exception_instance)
+        elif self.running_tests == 'true':
+            pass
+        else:
+            raise AttributeError(f'Secret runtime-parameters.running-tests is neither "true" nor "false": {self.running_tests}')
+
+
 logger = None
 
 
@@ -496,13 +496,13 @@ def get_logger():
         log_handler.setLevel(logging.DEBUG)
         log_handler.setFormatter(formatter)
 
-        # epsagon_handler = EpsagonHandler()
-        # epsagon_handler.setLevel(logging.ERROR)
-        # epsagon_handler.setFormatter(formatter)
+        epsagon_handler = EpsagonHandler()
+        epsagon_handler.setLevel(logging.ERROR)
+        epsagon_handler.setFormatter(formatter)
 
         for handler in [
             log_handler,
-            # epsagon_handler,
+            epsagon_handler,
                         ]:
             logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
