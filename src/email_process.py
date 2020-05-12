@@ -69,8 +69,7 @@ def extract_received_for(mail_object, correlation_id=None):
 
 def create_message(message_content, message_obj_http_path, correlation_id=None):
     separator = ";"
-    # mail_object = email.message_from_string(message_content.decode('utf-8'))
-    mail_object = email.message_from_string(message_content, policy=email.policy.default)  # https://stackoverflow.com/a/55210089
+    mail_object = email.message_from_string(message_content.decode('utf-8'), policy=email.policy.default)  # https://stackoverflow.com/a/55210089
     received_for = extract_received_for(mail_object)
     recipient_list = get_forward_to_address(received_for, correlation_id=correlation_id)
 
