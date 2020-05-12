@@ -17,7 +17,7 @@
 
 import boto3
 # import datetime
-# import epsagon
+import epsagon
 import functools
 import json
 import logging
