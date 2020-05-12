@@ -63,14 +63,14 @@ def namespace2profile(namespace):
         return namespace2profile_map.get(namespace)
 
 
-# PRODUCTION_ENV_NAME = 'prod'
-# STAGING_ENV_NAME = 'staging'
-#
-# PRODUCTION_NAMESPACE = name2namespace(PRODUCTION_ENV_NAME)
-# STAGING_NAMESPACE = name2namespace(STAGING_ENV_NAME)
-# # endregion
-#
-#
+PRODUCTION_ENV_NAME = 'prod'
+STAGING_ENV_NAME = 'staging'
+
+PRODUCTION_NAMESPACE = name2namespace(PRODUCTION_ENV_NAME)
+STAGING_NAMESPACE = name2namespace(STAGING_ENV_NAME)
+# endregion
+
+
 # region Custom error classes and handling
 class DetailedValueError(ValueError):
     def __init__(self, message, details):
@@ -745,10 +745,10 @@ def aws_request(method, endpoint_url, base_url, params=None, data=None, aws_api_
 #     return aws_request(method='GET', endpoint_url=endpoint_url, base_url=base_url, params=params)
 #
 #
-# def aws_post(endpoint_url, base_url, params=None, request_body=None):
-#     return aws_request(method='POST', endpoint_url=endpoint_url, base_url=base_url, params=params, data=request_body)
-#
-#
+def aws_post(endpoint_url, base_url, params=None, request_body=None):
+    return aws_request(method='POST', endpoint_url=endpoint_url, base_url=base_url, params=params, data=request_body)
+
+
 # def aws_patch(endpoint_url, base_url, request_body):
 #     return aws_request(method='PATCH', endpoint_url=endpoint_url, base_url=base_url, data=request_body)
 # endregion
