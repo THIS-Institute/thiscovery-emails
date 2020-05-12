@@ -30,8 +30,33 @@ from common.ses_utilities import SesClient
 
 
 def get_forward_to_address(received_for, correlation_id=None):
+    """
+    Args:
+        received_for:
+        correlation_id:
+
+    Returns:
+
+    Notes:
+        This function can probably be optimised by making a call to the scan method of ddb_client and then parsing the results, rather than making
+        up to three separate calls to get_item
+
+    """
     ddb_client = Dynamodb()
+
+    # try matching full received_for email address
     ddb_item = ddb_client.get_item(table_name='ForwardingMap', key=received_for, correlation_id=correlation_id)
+    if ddb_item is not None:
+        return ddb_item['forward-to']
+
+    # try matching subdomain
+    subdomain = received_for.split('@')[1]
+    ddb_item = ddb_client.get_item(table_name='ForwardingMap', key=subdomain, correlation_id=correlation_id)
+    if ddb_item is not None:
+        return ddb_item['forward-to']
+
+    # go for the domain catch-all rule
+    ddb_item = ddb_client.get_item(table_name='ForwardingMap', key="thiscovery.org", correlation_id=correlation_id)
     if ddb_item is not None:
         return ddb_item['forward-to']
 
