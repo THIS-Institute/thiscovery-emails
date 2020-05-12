@@ -79,7 +79,7 @@ def create_message(message_content, message_obj_http_path, correlation_id=None):
 
     # The body text of the email.
     body_text = f"The attached message was received from {separator.join(mail_object.get_all('From')).strip()}. " \
-                f"This message is archived at {message_obj_http_path}"
+                f"It is archived at {message_obj_http_path}"
 
     # The file name to use for the attached message. Uses regex to remove all
     # non-alphanumeric characters, and appends a file extension.
