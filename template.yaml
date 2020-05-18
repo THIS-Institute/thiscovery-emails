@@ -1,6 +1,13 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Resources:
+  Permission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ForwardEmail
+      Principal: ses.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
   DefaultRuleSet:
     Type: AWS::SES::ReceiptRuleSet
     Properties:
@@ -9,46 +16,13 @@ Resources:
     Type: AWS::SES::ReceiptRule
     Properties:
       Rule:
-        Recipients:
-          - "thiscovery.org"
         Actions:
           - S3Action:
               BucketName: !Ref incoming
-              ObjectKeyPrefix: "production"
           - LambdaAction:
               FunctionArn: !GetAtt ForwardEmail.Arn
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMail
-      RuleSetName: !Ref DefaultRuleSet
-  SaveIncomingTestMail:
-    Type: AWS::SES::ReceiptRule
-    Properties:
-      Rule:
-        Recipients:
-          - "test.thiscovery.org"
-        Actions:
-          - S3Action:
-              BucketName: !Ref incoming
-              ObjectKeyPrefix: "test"
-          - LambdaAction:
-              FunctionArn: !GetAtt ForwardEmail.Arn
-        Enabled: true
-        Name: !Sub ${AWS::StackName}-SaveIncomingTestMail
-      RuleSetName: !Ref DefaultRuleSet
-  SaveIncomingStagingMail:
-    Type: AWS::SES::ReceiptRule
-    Properties:
-      Rule:
-        Recipients:
-          - "staging.thiscovery.org"
-        Actions:
-          - S3Action:
-              BucketName: !Ref incoming
-              ObjectKeyPrefix: "staging"
-          - LambdaAction:
-              FunctionArn: !GetAtt ForwardEmail.Arn
-        Enabled: true
-        Name: !Sub ${AWS::StackName}-SaveIncomingStagingMail
       RuleSetName: !Ref DefaultRuleSet
   incoming:
     Type: AWS::S3::Bucket
@@ -58,21 +32,19 @@ Resources:
   SesAccessIncomingBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket:
-        Ref: "incoming"
+      Bucket: !Ref incoming
       PolicyDocument:
         Statement:
           - Action:
-              - "s3:PutObject"
-            Effect: "Allow"
-            Resource:
-              Fn::Join:
-                - ""
-                - - "arn:aws:s3:::"
-                  - Ref: "incoming"
-                  - "/*"
+              - s3:PutObject
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref incoming
+                - /*
             Principal:
-              Service: "ses.amazonaws.com"
+              Service: ses.amazonaws.com
             Condition:
               StringEquals:
                 aws:Referer: !Sub ${AWS::AccountId}
@@ -84,12 +56,13 @@ Resources:
         - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
         - ResourceName: SendEmail
       CodeUri: src
-      Handler: email_process.send_email
+      Handler: email_process.send_email_api
       Runtime: python3.7
       MemorySize: !Ref EnvConfiglambdamemorysizeAsString
       Timeout: !Ref EnvConfiglambdatimeoutAsString
       Tracing: Active
       Policies:
+        - AmazonSESFullAccess
         - AWSXrayWriteOnlyAccess
       Events:
         EmailServiceApiPOSTv1send:
@@ -112,20 +85,27 @@ Resources:
       Timeout: !Ref EnvConfiglambdatimeoutAsString
       Tracing: Active
       Policies:
+        - AmazonSESFullAccess
         - AWSXrayWriteOnlyAccess
-      Events:
-        incoming:
-          Type: S3
-          Properties:
-            Bucket: !Ref incoming
-            Events:
-              - s3:ObjectCreated:*
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ForwardingMap
+        - S3CrudPolicy:
+            BucketName: !Ref incoming
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${EnvironmentTagName}/*
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ForwardingMap
+          TABLE_ARN: !GetAtt ForwardingMap.Arn
+          BUCKET_NAME: !Ref incoming
+          BUCKET_ARN: !GetAtt incoming.Arn
+          SECRETS_NAMESPACE: !Sub /${EnvironmentTagName}/
   EmailServiceApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub
-        - ${ResourceName} From Stack ${StackTagName} Environment ${EnvironmentTagName}
-        - ResourceName: EmailServiceApi
+        - ${ResourceName} Env ${EnvironmentTagName}
+        - ResourceName: Thiscovery Email Service API
       StageName: !Ref EnvironmentAPIGatewayStageName
       DefinitionBody:
         swagger: '2.0'
@@ -140,8 +120,55 @@ Resources:
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SendEmail.Arn}/invocations
               responses: {}
+          /v1/raise-error:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RaiseError.Arn}/invocations
+              responses: {}
       EndpointConfiguration: REGIONAL
       TracingEnabled: true
+  ForwardingMap:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TableName: !Sub ${AWS::StackName}-ForwardingMap
+  RaiseError:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-RaiseError
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: RaiseError
+      CodeUri: src
+      Handler: misc.raise_error_api
+      Runtime: python3.7
+      MemorySize: !Ref EnvConfiglambdamemorysizeAsString
+      Timeout: !Ref EnvConfiglambdatimeoutAsString
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${EnvironmentTagName}/*
+      Events:
+        EmailServiceApiPOSTv1raiseerror:
+          Type: Api
+          Properties:
+            Path: /v1/raise-error
+            Method: POST
+            RestApiId: !Ref EmailServiceApi
+      Environment:
+        Variables:
+          SECRETS_NAMESPACE: !Sub /${EnvironmentTagName}/
 Parameters:
   StackTagName:
     Type: String

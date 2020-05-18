@@ -14,25 +14,25 @@
 #
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
-#
+
 import boto3
-import datetime
+# import datetime
 import epsagon
 import functools
 import json
 import logging
 import os
-import re
+# import re
 import requests
 import sys
 import uuid
-import validators
-
+# import validators
+#
 from botocore.exceptions import ClientError
-from dateutil import parser, tz
+# from dateutil import parser, tz
 from http import HTTPStatus
 from pythonjsonlogger import jsonlogger
-from timeit import default_timer as timer
+# from timeit import default_timer as timer
 
 
 # region constants
@@ -49,7 +49,7 @@ def namespace2profile(namespace):
     Maps namespaces in dev_config.py to profiles in ~/.aws/credentials
     """
     if not running_on_aws():
-        from api.local.secrets import THISCOVERY_PROD_PROFILE, THISCOVERY_STAGING_PROFILE, THISCOVERY_AFS25_PROFILE, THISCOVERY_AMP205_PROFILE
+        from local.secrets import THISCOVERY_PROD_PROFILE, THISCOVERY_STAGING_PROFILE, THISCOVERY_AFS25_PROFILE, THISCOVERY_AMP205_PROFILE
 
         namespace2profile_map = {
             '/prod/': THISCOVERY_PROD_PROFILE,
@@ -141,18 +141,18 @@ def running_unit_tests():
     testing = os.getenv("TESTING")
     return testing == 'true'
 # endregion
-
-
-# region Misc utilities
-# removes newlines and multiple spaces
-def minimise_white_space(s):
-    return re.sub(' +', ' ', s.replace('\n', ' '))
-
-
-# Reads and returns the entire contents of a file
-def get_file_as_string(path):
-    with open(path, 'r') as f:
-        return f.read()
+#
+#
+# # region Misc utilities
+# # removes newlines and multiple spaces
+# def minimise_white_space(s):
+#     return re.sub(' +', ' ', s.replace('\n', ' '))
+#
+#
+# # Reads and returns the entire contents of a file
+# def get_file_as_string(path):
+#     with open(path, 'r') as f:
+#         return f.read()
 
 
 def running_on_aws():
@@ -164,89 +164,89 @@ def running_on_aws():
     except:
         region = None
     return region is not None
-
-
-def now_with_tz():
-    return datetime.datetime.now(tz.tzlocal())
-
-
-def get_start_time():
-    return timer()
-
-
-def get_elapsed_ms(start_time):
-    elapsed_ms = int((timer() - start_time) * 1000)
-    return elapsed_ms
-
-
-def obfuscate_data(input, item_key_path):
-    try:
-        key = item_key_path[0]
-        if key in input:
-            if len(item_key_path) == 1:
-                input[key] = '*****'
-            else:
-                obfuscate_data(input[key], item_key_path[1:])
-    except TypeError:
-        # if called with None or non-subscriptable arguments then do nothing
-        pass
-# endregion
-
-
-# region Validation methods
-def null_validator(s):
-    """
-    A validator that doesn't do anything. For use for optional parameters of create_user_task that do not require validation
-    """
-    return s
-
-
-def validate_int(s):
-    try:
-        int(s)
-        return s
-    except ValueError:
-        errorjson = {'int': s}
-        raise DetailedValueError('invalid integer', errorjson)
-
-
-def validate_uuid(s):
-    try:
-        uuid.UUID(s, version=4)
-        if uuid.UUID(s).version != 4:
-            errorjson = {'uuid': s}
-            raise DetailedValueError('uuid is not version 4', errorjson)
-        return s
-    except ValueError:
-        errorjson = {'uuid': s}
-        raise DetailedValueError('invalid uuid', errorjson)
-
-
-def validate_utc_datetime(s):
-    try:
-        # date format should be like '2018-06-12 16:16:56.087895+01'
-        parser.isoparse(s)
-        return s
-    except ValueError:
-        errorjson = {'datetime': s}
-        raise DetailedValueError('invalid utc format datetime', errorjson)
-
-
-def validate_url(s):
-    if validators.url(s):
-        return s
-    else:
-        errorjson = {'url': s}
-        raise DetailedValueError('invalid url', errorjson)
-
-
-def validate_boolean(s):
-    if s in ['true', 'True', 'false', 'False', '0', '1']:
-        return s
-    else:
-        errorjson = {'boolean': s}
-        raise DetailedValueError('invalid boolean', errorjson)
-# endregion
+#
+#
+# def now_with_tz():
+#     return datetime.datetime.now(tz.tzlocal())
+#
+#
+# def get_start_time():
+#     return timer()
+#
+#
+# def get_elapsed_ms(start_time):
+#     elapsed_ms = int((timer() - start_time) * 1000)
+#     return elapsed_ms
+#
+#
+# def obfuscate_data(input, item_key_path):
+#     try:
+#         key = item_key_path[0]
+#         if key in input:
+#             if len(item_key_path) == 1:
+#                 input[key] = '*****'
+#             else:
+#                 obfuscate_data(input[key], item_key_path[1:])
+#     except TypeError:
+#         # if called with None or non-subscriptable arguments then do nothing
+#         pass
+# # endregion
+#
+#
+# # region Validation methods
+# def null_validator(s):
+#     """
+#     A validator that doesn't do anything. For use for optional parameters of create_user_task that do not require validation
+#     """
+#     return s
+#
+#
+# def validate_int(s):
+#     try:
+#         int(s)
+#         return s
+#     except ValueError:
+#         errorjson = {'int': s}
+#         raise DetailedValueError('invalid integer', errorjson)
+#
+#
+# def validate_uuid(s):
+#     try:
+#         uuid.UUID(s, version=4)
+#         if uuid.UUID(s).version != 4:
+#             errorjson = {'uuid': s}
+#             raise DetailedValueError('uuid is not version 4', errorjson)
+#         return s
+#     except ValueError:
+#         errorjson = {'uuid': s}
+#         raise DetailedValueError('invalid uuid', errorjson)
+#
+#
+# def validate_utc_datetime(s):
+#     try:
+#         # date format should be like '2018-06-12 16:16:56.087895+01'
+#         parser.isoparse(s)
+#         return s
+#     except ValueError:
+#         errorjson = {'datetime': s}
+#         raise DetailedValueError('invalid utc format datetime', errorjson)
+#
+#
+# def validate_url(s):
+#     if validators.url(s):
+#         return s
+#     else:
+#         errorjson = {'url': s}
+#         raise DetailedValueError('invalid url', errorjson)
+#
+#
+# def validate_boolean(s):
+#     if s in ['true', 'True', 'false', 'False', '0', '1']:
+#         return s
+#     else:
+#         errorjson = {'boolean': s}
+#         raise DetailedValueError('invalid boolean', errorjson)
+# # endregion
 
 
 # region boto3
@@ -298,43 +298,43 @@ class BaseClient:
         if self.aws_namespace is None:
             self.aws_namespace = get_aws_namespace()[1:-1]
         return self.aws_namespace
-
-
-class SsmClient(BaseClient):
-    def __init__(self):
-        super().__init__('ssm')
-
-    def _prefix_name(self, name, prefix):
-        if prefix is None:
-            prefix = f"/{super().get_namespace()}/"
-        return prefix + name
-
-    def get_parameter(self, name, prefix=None):
-        """
-        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.get_parameter
-        """
-        parameter_name = self._prefix_name(name, prefix)
-        self.logger.debug(f'Getting SSM parameter {parameter_name}')
-        response = self.client.get_parameter(
-            Name=parameter_name,
-        )
-        assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'call to boto3.client.get_parameter failed with response: {response}'
-        return response['Parameter']['Value']
-
-    def put_parameter(self, name, value, prefix=None):
-        """
-        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.put_parameter
-        """
-        parameter_name = self._prefix_name(name, prefix)
-        self.logger.debug(f'Adding or updating SSM parameter {parameter_name} with value {value}')
-        response = self.client.put_parameter(
-            Name=parameter_name,
-            Value=value,
-            Type='String',
-            Overwrite=True,
-        )
-        assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'call to boto3.client.put_parameter failed with response: {response}'
-        return response
+#
+#
+# class SsmClient(BaseClient):
+#     def __init__(self):
+#         super().__init__('ssm')
+#
+#     def _prefix_name(self, name, prefix):
+#         if prefix is None:
+#             prefix = f"/{super().get_namespace()}/"
+#         return prefix + name
+#
+#     def get_parameter(self, name, prefix=None):
+#         """
+#         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.get_parameter
+#         """
+#         parameter_name = self._prefix_name(name, prefix)
+#         self.logger.debug(f'Getting SSM parameter {parameter_name}')
+#         response = self.client.get_parameter(
+#             Name=parameter_name,
+#         )
+#         assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'call to boto3.client.get_parameter failed with response: {response}'
+#         return response['Parameter']['Value']
+#
+#     def put_parameter(self, name, value, prefix=None):
+#         """
+#         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.put_parameter
+#         """
+#         parameter_name = self._prefix_name(name, prefix)
+#         self.logger.debug(f'Adding or updating SSM parameter {parameter_name} with value {value}')
+#         response = self.client.put_parameter(
+#             Name=parameter_name,
+#             Value=value,
+#             Type='String',
+#             Overwrite=True,
+#         )
+#         assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'call to boto3.client.put_parameter failed with response: {response}'
+#         return response
 
 
 class SecretsManager(BaseClient):
@@ -500,16 +500,19 @@ def get_logger():
         epsagon_handler.setLevel(logging.ERROR)
         epsagon_handler.setFormatter(formatter)
 
-        for handler in [log_handler, epsagon_handler]:
+        for handler in [
+            log_handler,
+            epsagon_handler,
+                        ]:
             logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
         logger.propagate = False
     return logger
 # endregion
-
-
-# region Correlation id
-
+#
+#
+# # region Correlation id
+#
 def new_correlation_id():
     return uuid.uuid4()
 
@@ -521,19 +524,19 @@ def get_correlation_id(event):
     except (KeyError, TypeError):  # KeyError if no correlation_id in headers, TypeError if no headers
         correlation_id = new_correlation_id()
     return str(correlation_id)
-# endregion
+# # endregion
 
 
 # region Secrets processing
 DEFAULT_AWS_REGION = 'eu-west-1'
-
-
-def get_aws_region():
-    try:
-        region = os.environ['AWS_REGION']
-    except KeyError:
-        region = DEFAULT_AWS_REGION
-    return region
+#
+#
+# def get_aws_region():
+#     try:
+#         region = os.environ['AWS_REGION']
+#     except KeyError:
+#         region = DEFAULT_AWS_REGION
+#     return region
 
 
 def get_aws_namespace():
@@ -543,48 +546,48 @@ def get_aws_namespace():
         except KeyError:
             raise DetailedValueError('SECRETS_NAMESPACE environment variable not defined', {})
     else:
-        from common.dev_config import UNIT_TEST_NAMESPACE, SECRETS_NAMESPACE
+        from local.dev_config import UNIT_TEST_NAMESPACE, SECRETS_NAMESPACE
         if running_unit_tests():
             secrets_namespace = UNIT_TEST_NAMESPACE
         else:
             secrets_namespace = SECRETS_NAMESPACE
     return secrets_namespace
-
-
-def get_environment_name():
-    namespace = get_aws_namespace()
-    # strip leading and trailing '/' chars
-    return namespace[1:-1]
-
-
-# this belongs in user_task class as a property - moved here to avoid circular includes
-def create_anonymous_url_params(base_url, ext_user_project_id, ext_user_task_id, external_task_id):
-    assert ext_user_project_id, 'ext_user_project_id is null'
-    assert ext_user_task_id, 'ext_user_task_id is null'
-    if "?" in base_url:
-        params = f'&ext_user_project_id={ext_user_project_id}&ext_user_task_id={ext_user_task_id}'
-    else:
-        params = f'?ext_user_project_id={ext_user_project_id}&ext_user_task_id={ext_user_task_id}'
-    if external_task_id is not None:
-        params += f'&external_task_id={external_task_id}'
-    return params
-
-
-def create_url_params(base_url, user_id, user_first_name, user_task_id, external_task_id=None):
-    if "?" in base_url:
-        params = f'&user_id={user_id}&first_name={user_first_name}&user_task_id={user_task_id}'
-    else:
-        params = f'?user_id={user_id}&first_name={user_first_name}&user_task_id={user_task_id}'
-    if external_task_id is not None:
-        params += f'&external_task_id={str(external_task_id)}'
-    return params
-
-
-def non_prod_env_url_param(target_env='prod'):
-    if get_environment_name() == target_env:
-        return ''
-    else:
-        return '&env=' + get_environment_name()
+#
+#
+# def get_environment_name():
+#     namespace = get_aws_namespace()
+#     # strip leading and trailing '/' chars
+#     return namespace[1:-1]
+#
+#
+# # this belongs in user_task class as a property - moved here to avoid circular includes
+# def create_anonymous_url_params(base_url, ext_user_project_id, ext_user_task_id, external_task_id):
+#     assert ext_user_project_id, 'ext_user_project_id is null'
+#     assert ext_user_task_id, 'ext_user_task_id is null'
+#     if "?" in base_url:
+#         params = f'&ext_user_project_id={ext_user_project_id}&ext_user_task_id={ext_user_task_id}'
+#     else:
+#         params = f'?ext_user_project_id={ext_user_project_id}&ext_user_task_id={ext_user_task_id}'
+#     if external_task_id is not None:
+#         params += f'&external_task_id={external_task_id}'
+#     return params
+#
+#
+# def create_url_params(base_url, user_id, user_first_name, user_task_id, external_task_id=None):
+#     if "?" in base_url:
+#         params = f'&user_id={user_id}&first_name={user_first_name}&user_task_id={user_task_id}'
+#     else:
+#         params = f'?user_id={user_id}&first_name={user_first_name}&user_task_id={user_task_id}'
+#     if external_task_id is not None:
+#         params += f'&external_task_id={str(external_task_id)}'
+#     return params
+#
+#
+# def non_prod_env_url_param(target_env='prod'):
+#     if get_environment_name() == target_env:
+#         return ''
+#     else:
+#         return '&env=' + get_environment_name()
 
 
 def get_secret(secret_name, namespace_override=None):
@@ -632,41 +635,41 @@ def get_secret(secret_name, namespace_override=None):
         secret = json.loads(secret)
     finally:
         return secret
-
+#
 # endregion
-
-
-# region Country code/name processing
-def append_country_name_to_list(entity_list):
-    for entity in entity_list:
-        append_country_name(entity)
-    return entity_list
-
-
-def append_country_name(entity):
-    country_code = entity['country_code']
-    entity['country_name'] = get_country_name(country_code)
-
-
-def load_countries():
-    country_list_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'countries.json')
-    country_list = json.loads(get_file_as_string(country_list_filename))
-    countries_dict = {}
-    for country in country_list:
-        countries_dict[country['Code']] = country['Name']
-    return countries_dict
-
-
-def get_country_name(country_code):
-    try:
-        return countries[country_code]
-    except KeyError as err:
-        errorjson = {'country_code': country_code}
-        raise DetailedValueError('invalid country code', errorjson)
-
-
-countries = load_countries()
-# endregion
+#
+#
+# # region Country code/name processing
+# def append_country_name_to_list(entity_list):
+#     for entity in entity_list:
+#         append_country_name(entity)
+#     return entity_list
+#
+#
+# def append_country_name(entity):
+#     country_code = entity['country_code']
+#     entity['country_name'] = get_country_name(country_code)
+#
+#
+# def load_countries():
+#     country_list_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'countries.json')
+#     country_list = json.loads(get_file_as_string(country_list_filename))
+#     countries_dict = {}
+#     for country in country_list:
+#         countries_dict[country['Code']] = country['Name']
+#     return countries_dict
+#
+#
+# def get_country_name(country_code):
+#     try:
+#         return countries[country_code]
+#     except KeyError as err:
+#         errorjson = {'country_code': country_code}
+#         raise DetailedValueError('invalid country code', errorjson)
+#
+#
+# countries = load_countries()
+# # endregion
 
 
 # region decorators
@@ -697,7 +700,6 @@ def lambda_wrapper(func):
     @functools.wraps(func)
     def thiscovery_lambda_wrapper(*args, **kwargs):
         logger = get_logger()
-        start_time = get_start_time()
 
         # check if the lambda event dict includes a correlation id; if it does not, add one and pass it to the wrapped lambda
         # also add a logger to the event dict
@@ -710,7 +712,7 @@ def lambda_wrapper(func):
         result = func(*updated_args, **kwargs)
         logger.info('Decorated function result and execution time', extra={'decorated func module': func.__module__, 'decorated func name': func.__name__,
                                                                            'result': result, 'func args': args, 'func kwargs': kwargs,
-                                                                           'elapsed_ms': get_elapsed_ms(start_time), 'correlation_id': correlation_id})
+                                                                           'correlation_id': correlation_id})
         return result
     return thiscovery_lambda_wrapper
 # endregion
@@ -737,16 +739,16 @@ def aws_request(method, endpoint_url, base_url, params=None, data=None, aws_api_
         return {'statusCode': response.status_code, 'body': response.text}
     except Exception as err:
         raise err
-
-
-def aws_get(endpoint_url, base_url, params):
-    return aws_request(method='GET', endpoint_url=endpoint_url, base_url=base_url, params=params)
-
-
+#
+#
+# def aws_get(endpoint_url, base_url, params):
+#     return aws_request(method='GET', endpoint_url=endpoint_url, base_url=base_url, params=params)
+#
+#
 def aws_post(endpoint_url, base_url, params=None, request_body=None):
     return aws_request(method='POST', endpoint_url=endpoint_url, base_url=base_url, params=params, data=request_body)
 
 
-def aws_patch(endpoint_url, base_url, request_body):
-    return aws_request(method='PATCH', endpoint_url=endpoint_url, base_url=base_url, data=request_body)
+# def aws_patch(endpoint_url, base_url, request_body):
+#     return aws_request(method='PATCH', endpoint_url=endpoint_url, base_url=base_url, data=request_body)
 # endregion
