@@ -12,9 +12,23 @@ Resources:
     Type: AWS::SES::ReceiptRuleSet
     Properties:
       RuleSetName: !Sub ${AWS::StackName}-DefaultRuleSet
+  Ignore:
+    Type: AWS::SES::ReceiptRule
+    Properties:
+      After: null
+      Rule:
+        Recipients:
+          - noreply@thiscovery.org
+        Actions:
+          - StopAction:
+              Scope: RuleSet
+        Enabled: true
+        Name: !Sub ${AWS::StackName}-Ignore
+      RuleSetName: !Ref DefaultRuleSet
   SaveIncomingMail:
     Type: AWS::SES::ReceiptRule
     Properties:
+      After: !Ref Ignore
       Rule:
         Actions:
           - S3Action:
