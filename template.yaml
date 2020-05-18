@@ -15,7 +15,6 @@ Resources:
   Ignore:
     Type: AWS::SES::ReceiptRule
     Properties:
-      After: null
       Rule:
         Recipients:
           - noreply@thiscovery.org
