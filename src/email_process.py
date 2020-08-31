@@ -23,8 +23,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 
-import common.utilities as utils
-from common.dynamodb_utilities import Dynamodb
+import thiscovery_lib.utilities as utils
+from thiscovery_lib.dynamodb_utilities import Dynamodb
 from common.s3_utilities import S3Client
 from common.ses_utilities import SesClient
 
