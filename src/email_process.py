@@ -16,17 +16,15 @@
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
 import email
-import http
 import json
 import re
+import thiscovery_lib.utilities as utils
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
-
-import thiscovery_lib.utilities as utils
 from thiscovery_lib.dynamodb_utilities import Dynamodb
-from common.s3_utilities import S3Client
-from common.ses_utilities import SesClient
+from thiscovery_lib.s3_utilities import S3Client
+from thiscovery_lib.ses_utilities import SesClient
 
 
 def get_forward_to_address(received_for, correlation_id=None):
