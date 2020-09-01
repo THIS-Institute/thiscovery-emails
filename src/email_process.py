@@ -27,6 +27,9 @@ from thiscovery_lib.s3_utilities import S3Client
 from thiscovery_lib.ses_utilities import SesClient
 
 
+STACK_NAME = 'thiscovery-emails'
+
+
 def get_forward_to_address(received_for, correlation_id=None):
     """
     Args:
@@ -40,7 +43,7 @@ def get_forward_to_address(received_for, correlation_id=None):
         up to three separate calls to get_item
 
     """
-    ddb_client = Dynamodb()
+    ddb_client = Dynamodb(stack_name=STACK_NAME)
 
     # try matching full received_for email address
     ddb_item = ddb_client.get_item(table_name='ForwardingMap', key=received_for, correlation_id=correlation_id)
