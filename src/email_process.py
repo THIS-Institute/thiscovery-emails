@@ -138,10 +138,10 @@ def forward_email_handler(event, context):
     return forward_email(message_id=message_id, correlation_id=event['correlation_id'])
 
 
-def send_email(to_address, subject, message_text, message_html, correlation_id=None):
+def send_email(to_address, subject, message_text, message_html, source="no-reply@thiscovery.org", correlation_id=None):
     ses_client = SesClient()
     return ses_client.send_simple_email(
-        "no-reply@thiscovery.org",
+        source=source,
         to_=to_address,
         subject=subject,
         body_text=message_text,
@@ -158,10 +158,11 @@ def send_email_api(event, context):
     email_dict = json.loads(event['body'])
     logger.info('API call', extra={'email_dict': email_dict, 'correlation_id': correlation_id})
     status_code = send_email(
-        email_dict['to'],
-        email_dict['subject'],
-        email_dict['body_text'],
-        email_dict['body_html'],
-        correlation_id
+        to_address=email_dict['to'],
+        subject=email_dict['subject'],
+        message_text=email_dict['body_text'],
+        message_html=email_dict['body_html'],
+        source=email_dict.get('source', "no-reply@thiscovery.org"),
+        correlation_id=correlation_id
     )
     return {"statusCode": status_code}
