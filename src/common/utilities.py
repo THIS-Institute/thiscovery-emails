@@ -554,10 +554,10 @@ def get_aws_namespace():
     return secrets_namespace
 #
 #
-# def get_environment_name():
-#     namespace = get_aws_namespace()
-#     # strip leading and trailing '/' chars
-#     return namespace[1:-1]
+def get_environment_name():
+    namespace = get_aws_namespace()
+    # strip leading and trailing '/' chars
+    return namespace[1:-1]
 #
 #
 # # this belongs in user_task class as a property - moved here to avoid circular includes

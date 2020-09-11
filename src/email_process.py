@@ -25,6 +25,7 @@ from email.mime.application import MIMEApplication
 
 import common.utilities as utils
 from common.dynamodb_utilities import Dynamodb
+from common.interviews_api_utilities import InterviewsApiClient
 from common.s3_utilities import S3Client
 from common.ses_utilities import SesClient
 
@@ -107,26 +108,85 @@ def create_message(message_content, message_obj_http_path, correlation_id=None):
     return recipient_list, msg.as_string()
 
 
-def get_message_from_s3(s3_bucket_name, object_key, region=None, correlation_id=None):
-    if region is None:
-        region = utils.DEFAULT_AWS_REGION
-    s3_client = S3Client()
-    message_obj_http_path = f"http://s3.console.aws.amazon.com/s3/object/{s3_bucket_name}/{object_key}?region={region}"
-    message_obj = s3_client.get_object(bucket=s3_bucket_name, key=object_key)
-    message_content = message_obj['Body'].read()
-    return message_content, message_obj_http_path
+class StoredEmail:
 
+    def __init__(self, message_id, correlation_id=None):
+        self.message_id = message_id
+        self.correlation_id = correlation_id
+        self.s3_client = S3Client()
+        self.bucket = utils.get_secret("incoming-email-bucket")['name']
+        self.message = None
+        self.message_obj_http_path = None
 
-def forward_email(message_id, correlation_id=None):
-    incoming_email_bucket = utils.get_secret("incoming-email-bucket")['name']
-    message_content, message_obj_http_path = get_message_from_s3(incoming_email_bucket, message_id, correlation_id=correlation_id)
-    recipient_list, output_message = create_message(message_content, message_obj_http_path, correlation_id)
-    ses_client = SesClient()
-    return ses_client.send_raw_email(
-        Source='no-reply@thiscovery.org',
-        Destinations=recipient_list,
-        RawMessage={'Data': output_message}
-    )
+    def get_message(self, region=None):
+        if region is None:
+            region = utils.DEFAULT_AWS_REGION
+        self.message_obj_http_path = f"http://s3.console.aws.amazon.com/s3/object/{self.bucket}/{self.message_id}?region={region}"
+        message_obj = self.s3_client.get_object(bucket=self.bucket, key=self.message_id)
+        self.message = message_obj['Body'].read()
+        return self.message, self.message_obj_http_path
+
+    def forward(self):
+        if self.message is None:
+            self.get_message()
+        recipient_list, output_message = create_message(self.message, self.message_obj_http_path, self.correlation_id)
+        ses_client = SesClient()
+        return ses_client.send_raw_email(
+            Source='no-reply@thiscovery.org',
+            Destinations=recipient_list,
+            RawMessage={'Data': output_message}
+        )
+
+    @staticmethod
+    def get_body(mail_object):
+        """
+        Adapted from: https://stackoverflow.com/a/32840516
+        """
+        body = ""
+        if mail_object.is_multipart():
+            for part in mail_object.walk():
+                ctype = part.get_content_type()
+                cdispo = str(part.get('Content-Disposition'))
+
+                # skip any text/plain (txt) attachments
+                if ctype == 'text/plain' and 'attachment' not in cdispo:
+                    body = part.get_payload(decode=True)  # decode
+                    break
+        # not multipart - i.e. plain text, no attachments, keeping fingers crossed
+        else:
+            body = mail_object.get_payload(decode=True)
+        return body
+
+    def process_appointment_info(self):
+        if self.message is None:
+            self.get_message()
+        mail_object = email.message_from_string(self.message.decode('utf-8'), policy=email.policy.default)
+        subject = mail_object['Subject']
+        p = re.compile(r"Appointment (\d{5,})")
+        m = p.search(subject)
+        try:
+            appointment_id = m.group(1)
+        except AttributeError:
+            raise utils.DetailedValueError(f'Could not extract appointment id from subject line', details={
+                'subject': subject,
+                'correlation_id': self.correlation_id,
+            })
+        body = self.get_body(mail_object=mail_object)
+        p = re.compile(r"https?://[^\s]+")
+        m = p.search(body)
+        try:
+            appointment_url = m.group()
+        except AttributeError:
+            raise utils.DetailedValueError(f'Could not find a url in the email body', details={
+                'subject': subject,
+                'body': body,
+                'correlation_id': self.correlation_id,
+            })
+        interviews_client = InterviewsApiClient(correlation_id=self.correlation_id)
+        return interviews_client.set_interview_url(
+            appointment_id=appointment_id,
+            interview_url=appointment_url,
+        )
 
 
 @utils.lambda_wrapper
@@ -135,7 +195,24 @@ def forward_email_handler(event, context):
     logger.debug('Logging event', extra={'event': event})
     message_id = event['Records'][0]['ses']['mail']['messageId']
     logger.info("Processing message object", extra={'message_id': message_id})
-    return forward_email(message_id=message_id, correlation_id=event['correlation_id'])
+    s3_email = StoredEmail(
+        message_id=message_id,
+        correlation_id=event['correlation_id']
+    )
+    return s3_email.forward()
+
+
+@utils.lambda_wrapper
+def process_appointment(event, context):
+    logger = event['logger']
+    logger.debug('Logging event', extra={'event': event})
+    message_id = event['Records'][0]['ses']['mail']['messageId']
+    logger.info("Processing message object", extra={'message_id': message_id})
+    s3_email = StoredEmail(
+        message_id=message_id,
+        correlation_id=event['correlation_id']
+    )
+    return s3_email.process_appointment_info()
 
 
 def send_email(to_address, subject, message_text, message_html, source="no-reply@thiscovery.org", correlation_id=None):
