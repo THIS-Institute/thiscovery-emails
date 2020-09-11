@@ -1,1 +1,3 @@
-thiscovery-lib
+boto3
+epsagon
+python-json-logger
