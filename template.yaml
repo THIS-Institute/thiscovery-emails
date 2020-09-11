@@ -27,7 +27,7 @@ Resources:
   SaveIncomingMail:
     Type: AWS::SES::ReceiptRule
     Properties:
-      After: !Ref Ignore
+      After: !Ref ProcessAppointmentRule
       Rule:
         Actions:
           - S3Action:
@@ -36,6 +36,21 @@ Resources:
               FunctionArn: !GetAtt ForwardEmail.Arn
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMail
+      RuleSetName: !Ref DefaultRuleSet
+  ProcessAppointmentRule:
+    Type: AWS::SES::ReceiptRule
+    Properties:
+      After: !Ref Ignore
+      Rule:
+        Recipients:
+          - appointments@thiscovery.org
+        Actions:
+          - LambdaAction:
+              FunctionArn: !GetAtt ProcessAppointment.Arn
+          - StopAction:
+              Scope: RuleSet
+        Enabled: true
+        Name: !Sub ${AWS::StackName}-ProcessAppointmentRule
       RuleSetName: !Ref DefaultRuleSet
   incoming:
     Type: AWS::S3::Bucket
