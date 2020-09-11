@@ -61,7 +61,7 @@ Resources:
           - StopAction:
               Scope: RuleSet
         Enabled: true
-        Name: !Sub ${AWS::StackName}-ProcessAppointmentRule
+        Name: !Sub ${AWS::StackName}-ForwardRule
       RuleSetName: !Ref DefaultRuleSet
   incoming:
     Type: AWS::S3::Bucket
