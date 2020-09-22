@@ -150,12 +150,12 @@ class StoredEmail:
 
                 # skip any text/plain (txt) attachments
                 if ctype == 'text/plain' and 'attachment' not in cdispo:
-                    body = part.get_payload(decode=True)  # decode
+                    body = part.get_payload()
                     break
         # not multipart - i.e. plain text, no attachments, keeping fingers crossed
         else:
-            body = mail_object.get_payload(decode=True)
-        return body
+            body = mail_object.get_payload()
+        return body.decode('utf-8')
 
     def process_appointment_info(self):
         if self.message is None:
