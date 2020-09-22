@@ -150,12 +150,12 @@ class StoredEmail:
 
                 # skip any text/plain (txt) attachments
                 if ctype == 'text/plain' and 'attachment' not in cdispo:
-                    body = part.get_payload()
+                    body = part.get_payload(decode=True)  # decode
                     break
         # not multipart - i.e. plain text, no attachments, keeping fingers crossed
         else:
-            body = mail_object.get_payload()
-        return body.decode('utf-8')
+            body = mail_object.get_payload(decode=True)
+        return body
 
     def process_appointment_info(self):
         if self.message is None:
@@ -173,7 +173,11 @@ class StoredEmail:
             })
         body = self.get_body(mail_object=mail_object)
         p = re.compile(r"https?://[^\s]+")
-        m = p.search(body)
+        try:
+            m = p.search(body)
+        except TypeError:
+            body = body.decode('utf-8')
+            m = p.search(body)
         try:
             appointment_url = m.group()
         except AttributeError:
