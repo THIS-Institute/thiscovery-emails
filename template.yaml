@@ -237,9 +237,13 @@ Resources:
         - AWSXrayWriteOnlyAccess
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${EnvironmentTagName}/*
+        - S3CrudPolicy:
+            BucketName: !Ref incoming
       Environment:
         Variables:
           SECRETS_NAMESPACE: !Sub /${EnvironmentTagName}/
+          BUCKET_NAME: !Ref incoming
+          BUCKET_ARN: !GetAtt incoming.Arn
 Parameters:
   StackTagName:
     Type: String
