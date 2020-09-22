@@ -8,6 +8,13 @@ Resources:
       FunctionName: !Ref ForwardEmail
       Principal: ses.amazonaws.com
       SourceAccount: !Ref AWS::AccountId
+  ProcessAppointmentPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ProcessAppointment
+      Principal: ses.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
   DefaultRuleSet:
     Type: AWS::SES::ReceiptRuleSet
     Properties:
