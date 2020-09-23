@@ -31,17 +31,18 @@ class InterviewsApiClient:
         else:
             self.base_url = f'https://{env_name}-interviews-api.thiscovery.org/'
 
-    def set_interview_url(self, appointment_id, interview_url):
+    def set_interview_url(self, appointment_id, interview_url, event_type):
         body = {
             'appointment_id': appointment_id,
             'interview_url': interview_url,
+            'event_type': event_type,
             'correlation_id': self.correlation_id,
         }
         result = utils.aws_request(
             method='PUT',
-            endpoint_url='v1/set_interview_url',
+            endpoint_url='v1/set-interview-url',
             base_url=self.base_url,
-            data=body,
+            data=json.dumps(body),
         )
         assert result['statusCode'] == HTTPStatus.OK, f'Call to interviews API returned error: {result}'
         return result
