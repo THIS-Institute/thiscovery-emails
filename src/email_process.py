@@ -193,13 +193,13 @@ class StoredEmail:
             })
 
         # extract env from body
-        p = re.compile(r"^env=([a-z\-]+)$")
+        p = re.compile(r"^env=([a-z\-0-9]+)$", re.MULTILINE)
         m = p.search(body)
         target_env = None
         try:
             target_env = m.group(1)
         except AttributeError:
-            self.logger.debug(f'Could not find env definition in email body', details={
+            self.logger.debug(f'Could not find env definition in email body', extra={
                 'body': body,
                 'correlation_id': self.correlation_id
             })
