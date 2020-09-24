@@ -206,6 +206,7 @@ class StoredEmail:
             })
 
         # extract env from body
+        body = body.replace("\r\n", "\n")  # convert Windows newlines to UNIX format
         p = re.compile(r"^env=([a-z\-0-9]+)$", re.MULTILINE)
         m = p.search(body)
         target_env = None
