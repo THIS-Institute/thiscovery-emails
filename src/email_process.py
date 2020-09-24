@@ -117,6 +117,7 @@ class StoredEmail:
         self.bucket = utils.get_secret("incoming-email-bucket")['name']
         self.message = None
         self.message_obj_http_path = None
+        self.logger = utils.get_logger()
 
     def get_message(self, region=None):
         if region is None:
@@ -162,6 +163,8 @@ class StoredEmail:
             self.get_message()
         mail_object = email.message_from_string(self.message.decode('utf-8'), policy=email.policy.default)
         subject = mail_object['Subject']
+
+        # extract appointment id from subject line
         p = re.compile(r"Appointment (\d{5,})")
         m = p.search(subject)
         try:
@@ -172,6 +175,8 @@ class StoredEmail:
                 'correlation_id': self.correlation_id,
             })
         body = self.get_body(mail_object=mail_object)
+
+        # extract url from body
         p = re.compile(r"https?://[^\s]+")
         try:
             m = p.search(body)
@@ -186,7 +191,23 @@ class StoredEmail:
                 'body': body,
                 'correlation_id': self.correlation_id,
             })
-        interviews_client = InterviewsApiClient(correlation_id=self.correlation_id)
+
+        # extract env from body
+        p = re.compile(r"^env=([a-z\-]+)$")
+        m = p.search(body)
+        target_env = None
+        try:
+            target_env = m.group(1)
+        except AttributeError:
+            self.logger.debug(f'Could not find env definition in email body', details={
+                'body': body,
+                'correlation_id': self.correlation_id
+            })
+
+        interviews_client = InterviewsApiClient(
+            env_override=target_env,
+            correlation_id=self.correlation_id
+        )
         return interviews_client.set_interview_url(
             appointment_id=appointment_id,
             interview_url=appointment_url,

@@ -23,9 +23,12 @@ import common.utilities as utils
 
 class InterviewsApiClient:
 
-    def __init__(self, correlation_id=None):
+    def __init__(self, env_override=None, correlation_id=None):
         self.correlation_id = correlation_id
-        env_name = utils.get_environment_name()
+        if env_override:
+            env_name = env_override
+        else:
+            env_name = utils.get_environment_name()
         if env_name == 'prod':
             self.base_url = 'https://interviews-api.thiscovery.org/'
         else:
