@@ -25,6 +25,7 @@ class InterviewsApiClient:
 
     def __init__(self, env_override=None, correlation_id=None):
         self.correlation_id = correlation_id
+        self.logger = utils.get_logger()
         if env_override:
             env_name = env_override
         else:
@@ -41,6 +42,7 @@ class InterviewsApiClient:
             'event_type': event_type,
             'correlation_id': self.correlation_id,
         }
+        self.logger.debug("Calling interviews API set-interview-url endpoint", extra={'body': body})
         result = utils.aws_request(
             method='PUT',
             endpoint_url='v1/set-interview-url',
