@@ -159,13 +159,18 @@ class StoredEmail:
         return body
 
     def process_appointment_info(self):
+        action_to_event_type = {
+            'scheduled': 'booking',
+            'rescheduled': 'rescheduling',
+        }
+
         if self.message is None:
             self.get_message()
         mail_object = email.message_from_string(self.message.decode('utf-8'), policy=email.policy.default)
         subject = mail_object['Subject']
 
-        # extract appointment id from subject line
-        p = re.compile(r"Appointment (\d{5,})")
+        # extract appointment id and action from subject line
+        p = re.compile(r"Appointment (\d{5,}) ([a-z]+)")
         m = p.search(subject)
         try:
             appointment_id = m.group(1)
@@ -174,6 +179,14 @@ class StoredEmail:
                 'subject': subject,
                 'correlation_id': self.correlation_id,
             })
+        try:
+            action = m.group(2)
+        except AttributeError:
+            raise utils.DetailedValueError(f'Could not extract event type from subject line', details={
+                'subject': subject,
+                'correlation_id': self.correlation_id,
+            })
+
         body = self.get_body(mail_object=mail_object)
 
         # extract url from body
@@ -211,6 +224,7 @@ class StoredEmail:
         return interviews_client.set_interview_url(
             appointment_id=appointment_id,
             interview_url=appointment_url,
+            event_type=action_to_event_type[action]
         )
 
 
