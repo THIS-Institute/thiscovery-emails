@@ -19,6 +19,7 @@ from http import HTTPStatus
 from pprint import pprint
 
 import tests.testing_utilities as test_utils
+from local.dev_config import UNIT_TEST_NAMESPACE
 from src.common.interviews_api_utilities import InterviewsApiClient
 
 
@@ -32,7 +33,9 @@ class TestInterviewUtilities(test_utils.BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.interviews_client = InterviewsApiClient()
+        cls.interviews_client = InterviewsApiClient(
+            env_override=UNIT_TEST_NAMESPACE[1:-1],
+        )
 
     def test_01_set_interview_url_ok(self):
         result = self.interviews_client.set_interview_url(
