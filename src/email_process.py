@@ -15,6 +15,7 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
+import chardet
 import email
 import http
 import json
@@ -194,7 +195,8 @@ class StoredEmail:
         try:
             m = p.search(body)
         except TypeError:
-            body = body.decode('utf-8')
+            probable_encoding = chardet.detect(body)['encoding']
+            body = body.decode(probable_encoding)
             m = p.search(body)
         try:
             appointment_url = m.group()
