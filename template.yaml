@@ -8,6 +8,13 @@ Resources:
       FunctionName: !Ref ForwardEmail
       Principal: ses.amazonaws.com
       SourceAccount: !Ref AWS::AccountId
+  ProcessAppointmentPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ProcessAppointment
+      Principal: ses.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
   DefaultRuleSet:
     Type: AWS::SES::ReceiptRuleSet
     Properties:
@@ -32,10 +39,36 @@ Resources:
         Actions:
           - S3Action:
               BucketName: !Ref incoming
-          - LambdaAction:
-              FunctionArn: !GetAtt ForwardEmail.Arn
         Enabled: true
         Name: !Sub ${AWS::StackName}-SaveIncomingMail
+      RuleSetName: !Ref DefaultRuleSet
+  ProcessAppointmentRule:
+    Type: AWS::SES::ReceiptRule
+    Properties:
+      After: !Ref SaveIncomingMail
+      Rule:
+        Recipients:
+          - appointments@thiscovery.org
+        Actions:
+          - LambdaAction:
+              FunctionArn: !GetAtt ProcessAppointment.Arn
+          - StopAction:
+              Scope: RuleSet
+        Enabled: true
+        Name: !Sub ${AWS::StackName}-ProcessAppointmentRule
+      RuleSetName: !Ref DefaultRuleSet
+  ForwardRule:
+    Type: AWS::SES::ReceiptRule
+    Properties:
+      After: !Ref ProcessAppointmentRule
+      Rule:
+        Actions:
+          - LambdaAction:
+              FunctionArn: !GetAtt ForwardEmail.Arn
+          - StopAction:
+              Scope: RuleSet
+        Enabled: true
+        Name: !Sub ${AWS::StackName}-ForwardRule
       RuleSetName: !Ref DefaultRuleSet
   incoming:
     Type: AWS::S3::Bucket
@@ -77,6 +110,8 @@ Resources:
       Policies:
         - AmazonSESFullAccess
         - AWSXrayWriteOnlyAccess
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${EnvironmentTagName}/*
       Events:
         EmailServiceApiPOSTv1send:
           Type: Api
@@ -84,6 +119,9 @@ Resources:
             Path: /v1/send
             Method: POST
             RestApiId: !Ref EmailServiceApi
+      Environment:
+        Variables:
+          SECRETS_NAMESPACE: !Sub /${EnvironmentTagName}/
   ForwardEmail:
     Type: AWS::Serverless::Function
     Properties:
@@ -182,6 +220,30 @@ Resources:
       Environment:
         Variables:
           SECRETS_NAMESPACE: !Sub /${EnvironmentTagName}/
+  ProcessAppointment:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ProcessAppointment
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: ProcessAppointment
+      CodeUri: src
+      Handler: email_process.process_appointment
+      Runtime: python3.7
+      MemorySize: !Ref EnvConfiglambdamemorysizeAsString
+      Timeout: 10
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/${EnvironmentTagName}/*
+        - S3CrudPolicy:
+            BucketName: !Ref incoming
+      Environment:
+        Variables:
+          SECRETS_NAMESPACE: !Sub /${EnvironmentTagName}/
+          BUCKET_NAME: !Ref incoming
+          BUCKET_ARN: !GetAtt incoming.Arn
 Parameters:
   StackTagName:
     Type: String

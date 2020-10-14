@@ -144,3 +144,4 @@ dmypy.json
 
 /tests/unit_tests/test_message.mime
 
+.idea/
