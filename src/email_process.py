@@ -24,10 +24,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from thiscovery_lib.dynamodb_utilities import Dynamodb
+from thiscovery_lib.interviews_api_utilities import InterviewsApiClient
 from thiscovery_lib.s3_utilities import S3Client
 from thiscovery_lib.ses_utilities import SesClient
 
-from common.interviews_api_utilities import InterviewsApiClient
 
 STACK_NAME = 'thiscovery-emails'
 

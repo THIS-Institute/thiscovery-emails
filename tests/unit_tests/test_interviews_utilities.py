@@ -18,7 +18,9 @@
 from http import HTTPStatus
 from pprint import pprint
 
-import tests.testing_utilities as test_utils
+from thiscovery_lib.interviews_api_utilities import InterviewsApiClient
+
+import thiscovery_dev_tools.testing_tools as test_utils
 from local.dev_config import UNIT_TEST_NAMESPACE
 from src.common.interviews_api_utilities import InterviewsApiClient
 
