@@ -17,18 +17,19 @@
 #
 import chardet
 import email
-import http
 import json
 import re
+import thiscovery_lib.utilities as utils
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
+from thiscovery_lib.dynamodb_utilities import Dynamodb
+from thiscovery_lib.interviews_api_utilities import InterviewsApiClient
+from thiscovery_lib.s3_utilities import S3Client
+from thiscovery_lib.ses_utilities import SesClient
 
-import common.utilities as utils
-from common.dynamodb_utilities import Dynamodb
-from common.interviews_api_utilities import InterviewsApiClient
-from common.s3_utilities import S3Client
-from common.ses_utilities import SesClient
+
+STACK_NAME = 'thiscovery-emails'
 
 
 def get_forward_to_address(received_for, correlation_id=None):
@@ -44,7 +45,7 @@ def get_forward_to_address(received_for, correlation_id=None):
         up to three separate calls to get_item
 
     """
-    ddb_client = Dynamodb()
+    ddb_client = Dynamodb(stack_name=STACK_NAME)
 
     # try matching full received_for email address
     ddb_item = ddb_client.get_item(table_name='ForwardingMap', key=received_for, correlation_id=correlation_id)

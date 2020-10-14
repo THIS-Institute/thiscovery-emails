@@ -24,10 +24,9 @@ import unittest
 from http import HTTPStatus
 from pprint import pprint
 
-from src.common.s3_utilities import S3Client
-import src.common.utilities as utils
+from thiscovery_lib.s3_utilities import S3Client
 import src.email_process as ep
-import tests.testing_utilities as test_utils
+import thiscovery_dev_tools.testing_tools as test_utils
 from local.secrets import THISCOVERY_PROD_PROFILE
 
 

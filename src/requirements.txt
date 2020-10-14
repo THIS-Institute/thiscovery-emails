@@ -1,5 +1,2 @@
-boto3
 chardet
-epsagon
-python-json-logger
-requests
+thiscovery-lib
