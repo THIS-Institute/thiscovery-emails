@@ -279,7 +279,7 @@ def send_email_api(event, context):
     logger.info('API call', extra={'email_dict': email_dict, 'correlation_id': correlation_id})
     alarm_test = email_dict.get('brew_coffee')
     if alarm_test:
-        raise utils.DeliberateError('Coffee is not available')
+        raise utils.DeliberateError('Coffee is not available', details={})
     status_code = send_email(
         to_address=email_dict['to'],
         subject=email_dict['subject'],
